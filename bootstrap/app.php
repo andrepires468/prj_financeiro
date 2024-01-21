@@ -79,17 +79,19 @@ $app->configure('database');
 //     App\Http\Middleware\ExampleMiddleware::class
 // ]);
 
+//$app->routeMiddleware([
+//  'auth' => App\Http\Middleware\Authenticate::class,
+//]);
+
 $app->routeMiddleware([
-  'auth' => App\Http\Middleware\Authenticate::class,
+  'autenticacao' => App\Http\Middleware\Autenticacao::class,
 ]);
+
 
 $app->middleware([
   App\Http\Middleware\CorsMiddleware::class
 ]);
 
-$app->routeMiddleware([
-  'autenticacao' => App\Http\Middleware\Autenticacao::class,
-]);
 
 
 /*
