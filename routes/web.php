@@ -17,7 +17,7 @@ $router->get('/', function() use ($router) {
   return $router->app->version();
 });
 
-if(!env('API_AAAA'))
+if(!env('API_VERSION'))
   echo "aaaaaaaaa";
 
 
