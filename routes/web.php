@@ -17,6 +17,10 @@ $router->get('/', function() use ($router) {
   return $router->app->version();
 });
 
+if(!env('API_VERSION'))
+  echo "aaaaaaaaa";
+
+
 $router->group(['prefix' => env('API_VERSION')], function() use ($router) {
 
   $router->group(['prefix' => 'auth'], function() use ($router) {
