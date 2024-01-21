@@ -13,12 +13,11 @@
 |
 */
 
+use Illuminate\Http\Response;
+
 $router->get('/', function() use ($router) {
   return $router->app->version();
 });
-
-if(!env('API_VERSION'))
-  echo "aaaaaaaaa";
 
 
 $router->group(['prefix' => env('API_VERSION')], function() use ($router) {
@@ -26,6 +25,11 @@ $router->group(['prefix' => env('API_VERSION')], function() use ($router) {
   $router->group(['prefix' => 'auth'], function() use ($router) {
     $router->post('login', 'AuthController@Login');
     $router->post('validate-login', 'AuthController@ValidateLogin');
+
+    $router->get('test', function() {
+      return response(['OK'], Response::HTTP_OK);
+    });
+
 //    $router->post('forgot-password', 'AuthController@ForgotPassword');
 //    $router->post('change-password', 'AuthController@ChangePassword');
   });
