@@ -26,12 +26,20 @@ $router->group(['prefix' => env('API_VERSION')], function() use ($router) {
     $router->post('login', 'AuthController@Login');
     $router->post('validate-login', 'AuthController@ValidateLogin');
 
-    $router->get('test', function() {
-      return response(['OK'], Response::HTTP_OK);
-    });
 
 //    $router->post('forgot-password', 'AuthController@ForgotPassword');
 //    $router->post('change-password', 'AuthController@ChangePassword');
+  });
+
+});
+
+$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
+
+  $router->group(['prefix' => 'auth'], function() use ($router) {
+
+    $router->get('test', function() {
+      return response(['OK'], Response::HTTP_OK);
+    });
   });
 
 });
