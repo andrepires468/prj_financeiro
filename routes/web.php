@@ -29,9 +29,6 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'],
     });
 
     $router->post('login', 'AuthController@Login');
-    $router->post('validate-login', 'AuthController@ValidateLogin');
-    $router->get('refresh', 'AuthController@Refresh');
-    $router->post('logout', 'AuthController@Logout');
 
   });
 
