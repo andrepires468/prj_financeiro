@@ -25,9 +25,11 @@ class AuthController extends Controller
 
     try {
 
-      $result = $this->authService->Login($request);
+//      $result = $this->authService->Login($request);
+//
+//      return ApiResponse::GetSuccessResponse($result);
 
-      return ApiResponse::GetSuccessResponse($result);
+      return ApiResponse::GetSuccessResponse(['OK']);
 
     } catch(\Exception $ex) {
         return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_BAD_REQUEST);
