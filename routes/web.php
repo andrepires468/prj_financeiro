@@ -14,21 +14,14 @@
 */
 
 
-use Illuminate\Http\Response;
-
 $router->get('/', function() use ($router) {
   return $router->app->version();
 });
 
 
-$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
+$router->group(['prefix' => env('API_VERSION')], function() use ($router) {
 
   $router->group(['prefix' => 'auth'], function() use ($router) {
-
-    $router->get('test', function() {
-      return response(['OK'], Response::HTTP_OK);
-    });
-
     $router->post('login', 'AuthController@Login');
 
   });
