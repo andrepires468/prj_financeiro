@@ -19,7 +19,7 @@ $router->get('/', function() use ($router) {
 });
 
 
-$router->group(['prefix' => env('API_VERSION')], function() use ($router) {
+$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
 
   $router->group(['prefix' => 'auth'], function() use ($router) {
     $router->post('login', 'AuthController@Login');
