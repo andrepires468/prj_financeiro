@@ -28,7 +28,7 @@ class ProcessService extends Service
     $emails = 0;
 
     // Conectar ao servidor IMAP do Gmail
-    $mailbox = imap_open('{imap.gmail.com:993/imap/ssl}INBOX', $user, $pass);
+    $mailbox = imap_open('{imap.gmail.com:993/imap/ssl/novalidate-cert}INBOX', $user, $pass);
 
     // Definir critérios de pesquisa (por exemplo, o endereço do remetente)
 //    $search_criteria = 'FROM "todomundo@nubank.com.br"';

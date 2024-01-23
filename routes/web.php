@@ -23,9 +23,7 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'],
 
   $router->group(['prefix' => 'auth'], function() use ($router) {
     $router->post('login', 'AuthController@Login');
-
   });
-
 
   $router->group(['prefix' => 'process'], function() use ($router) {
     $router->post('update', 'ProcessController@Update');
