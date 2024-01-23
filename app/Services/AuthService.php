@@ -4,7 +4,7 @@
 namespace App\Services;
 
 
-use App\Helpers\Bcrypt as Bcrypt;
+use App\Helpers\Bcrypt;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
