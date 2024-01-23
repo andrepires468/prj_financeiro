@@ -3,15 +3,11 @@
 
 namespace App\Services;
 
-use App\Helpers\ApiResponse;
+
 use App\Helpers\Bcrypt;
-use App\Helpers\Functions;
 use App\Mail\GenericMail;
 use App\Models\Usuario;
-use DateTime;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuthService extends Service

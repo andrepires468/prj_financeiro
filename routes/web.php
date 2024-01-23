@@ -13,8 +13,8 @@
 |
 */
 
+
 use Illuminate\Http\Response;
-//use \App\Http\Controllers;
 
 $router->get('/', function() use ($router) {
   return $router->app->version();
@@ -29,10 +29,10 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'],
       return response(['OK'], Response::HTTP_OK);
     });
 
-//    $router->post('login', 'AuthController@Login');
-    $router->post('login', '\App\Http\Controllers\AuthController@Login');
+    $router->post('login', 'AuthController@Login');
 
   });
+
 
   $router->group(['prefix' => 'process'], function() use ($router) {
     $router->post('update', 'ProcessController@Update');

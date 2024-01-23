@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
-use App\Models\Usuario;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,7 +15,6 @@ class AuthController extends Controller
 
   public function __construct(AuthService $authService)
   {
-    $this->middleware('auth:api', ['except' => ['Login', 'ValidateLogin', 'ForgotPassword', 'ChangePassword']]);
     $this->authService = $authService;
   }
 
