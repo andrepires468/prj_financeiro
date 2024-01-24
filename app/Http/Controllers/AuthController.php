@@ -33,4 +33,33 @@ class AuthController extends Controller
 
   }
 
+  public function Logout()
+  {
+    try {
+
+      $this->authService->Logout();
+
+      return ApiResponse::GetSuccessResponse([], 'Desconectado com sucesso');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
+  public function Refresh()
+  {
+
+    try {
+
+      $result = $this->authService->Refresh();
+
+      return ApiResponse::GetSuccessResponse($result);
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
 }

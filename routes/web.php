@@ -25,6 +25,15 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'],
     $router->post('login', 'AuthController@Login');
   });
 
+});
+
+$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], function() use ($router) {
+
+  $router->group(['prefix' => 'auth'], function() use ($router) {
+    $router->post('refresh', 'AuthController@Refresh');
+    $router->post('logout', 'AuthController@Logout');
+  });
+
   $router->group(['prefix' => 'process'], function() use ($router) {
     $router->post('update', 'ProcessController@Update');
   });
