@@ -5,7 +5,7 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": "^8.2",
+        "php": "^8.2||^8.0",
         "google/apiclient": "^2.15",
         "illuminate/mail": "^10.40",
         "illuminate/queue": "^10.40",
