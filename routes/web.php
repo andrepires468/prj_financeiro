@@ -19,10 +19,18 @@ $router->get('/', function() use ($router) {
 });
 
 
-$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
+$router->group(['prefix' => env('API_VERSION')], function() use ($router) {
 
   $router->group(['prefix' => 'auth'], function() use ($router) {
     $router->post('login', 'AuthController@Login');
+  });
+
+});
+
+$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
+
+  $router->group(['prefix' => 'process'], function() use ($router) {
+    $router->post('update', 'ProcessController@Update');
   });
 
 });
@@ -34,8 +42,5 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
     $router->post('logout', 'AuthController@Logout');
   });
 
-  $router->group(['prefix' => 'process'], function() use ($router) {
-    $router->post('update', 'ProcessController@Update');
-  });
 
 });
