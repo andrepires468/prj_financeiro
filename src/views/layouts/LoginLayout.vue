@@ -1,9 +1,11 @@
 <template>
-  <div class="main-wrapper">
-    <router-view v-slot='{ Component }'>
+
+  <router-view v-slot='{ Component }'>
+    <div class="container-fluid">
       <component :is='Component'/>
-    </router-view>
-  </div>
+    </div>
+  </router-view>
+
 </template>
 
 <script>

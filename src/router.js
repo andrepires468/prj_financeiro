@@ -6,7 +6,7 @@ import {h, resolveComponent} from 'vue'
 const routes = [
   {
     path: '/',
-    name: 'home',
+    name: '',
     component: () => import('./views/layouts/LoginLayout'),
     redirect: '/login',
     children: [
@@ -14,20 +14,20 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: () => import('./views/pages/Login'),
-      },
+      }
     ]
   },
   {
     path: '/financeiro',
     name: 'home',
     component: () => import('./views/layouts/SystemLayout'),
-    redirect: '/login',
+    redirect: '/financeiro',
     children: [
       {
         path: '/financeiro',
         name: 'Financeiro',
         component: () => import('./views/pages/Financeiro')
-      },
+      }
     ]
   }
 ]
