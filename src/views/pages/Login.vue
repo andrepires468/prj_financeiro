@@ -56,6 +56,8 @@ export default {
 
       try {
 
+        swalLoading.fire('', 'Realizando Login...')
+
         const data = {
           Email: this.Email,
           Password: this.Password,
@@ -64,6 +66,10 @@ export default {
         const result = await authService.login(data)
         if (!result.Success)
           throw new Error(Helper.getMessageError(result))
+
+        this.$router.push('/financeiro')
+
+        swalLoading.close()
 
       } catch (e) {
         Helper.messageExceptionHandler(e)

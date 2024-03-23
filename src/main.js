@@ -57,13 +57,13 @@ window.swalLoading = swalLoading;
 
 
 window.addEventListener("offline", (event) => {
-  window.swalLoading.fire('Offline', 'Verifique a sua conexão com a internet', 'warning')
-  console.info('[System] Offline');
+  window.swalLoading.fire('offline', 'Verifique a sua conexão com a internet', 'warning')
+  console.info('[System] offline');
 });
 
 window.addEventListener("online", (event) => {
   window.swalToast.close()
-  console.info('[System] Online');
+  console.info('[System] online');
 });
 
 
@@ -71,7 +71,8 @@ const app = createApp(App)
 
 app.use(BootstrapIconsPlugin)
 
-app.use(router).mount('#app')
+app.use(router)
+    .mount('#app')
 
 
 

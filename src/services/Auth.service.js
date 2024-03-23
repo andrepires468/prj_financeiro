@@ -21,19 +21,6 @@ export default {
       }
     }
   },
-  async validate(data) {
-    try {
-      const url = `${endpoints.authValidate}`;
-      const result = await api.login(url, data)
-      return Helper.getServiceResponse(result)
-    } catch (e) {
-      return {
-        Code: ServiceResponseCode.GenericException,
-        Message: e.Message,
-        Success: false,
-      }
-    }
-  },
   async refreshToken() {
     try {
       const url = endpoints.authRefreshToken
@@ -65,43 +52,6 @@ export default {
         Success: false,
       }
     }
-  },
-  async forgotPassword(email, modalidade, url) {
-    try {
-      const data = {
-        Email: email,
-        Modalidade: modalidade,
-        Url: url
-      }
-      const result = await api.post(endpoints.authForgotPassword, data, true)
-      return Helper.getServiceResponse(result)
-    } catch (e) {
-      return {
-        Code: ServiceResponseCode.GenericException,
-        Message: e.message,
-        Success: false,
-      }
-    }
-  },
-  async changePassword(Id, Password, PasswordConfirmacao, TokenAlterarSenha = null) {
-
-    try {
-      const data = {
-        Id: Id,
-        Password: Password,
-        PasswordConfirmacao: PasswordConfirmacao,
-        TokenAlterarSenha
-      }
-      const result = await api.post(endpoints.authChangePassword, data, (TokenAlterarSenha) ? true : false)
-      return Helper.getServiceResponse(result)
-    } catch (e) {
-      return {
-        Code: ServiceResponseCode.GenericException,
-        Message: e.message,
-        Success: false,
-      }
-    }
-
   },
 
 }

@@ -17,35 +17,6 @@ export default {
     const user = this.getLocalUser()
     return user.Usuario.Usuario
   },
-  getPermissions() {
-    const user = this.getLocalUser()
-    return user.Usuario.Permissoes
-  },
-  getModalidade() {
-    const user = this.getLocalUser()
-    return user.Usuario.Modalidade
-  },
-  isAdmin() {
-    const user = this.getUser()
-    if (user.Admin)
-      return true
-    return false
-  },
-  checkPermision(permissaoNome) {
-    const user = this.getLocalUser()
-    if (!user)
-      return false
-
-    if (user.Usuario.Usuario.Admin)
-      return true
-
-    user.Usuario.Permissoes.each(perm => {
-      if (perm.nome == permissaoNome)
-        return true
-    })
-
-    return true
-  },
   saveUser(user) {
     const session = {
       ...user,
