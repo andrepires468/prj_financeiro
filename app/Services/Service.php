@@ -4,6 +4,7 @@
 namespace App\Services;
 
 use DateTime;
+use Illuminate\Support\Facades\DB;
 
 class Service
 {
@@ -13,7 +14,11 @@ class Service
   public function __construct()
   {
 
-    $this->date = new DateTime();
+    $result = DB::connection('home')->select('select current_timestamp() datetime');
+
+    $this->date = new DateTime($result[0]->datetime);
+    //$this->date->format("Y-m-d H:i:s"); // format
+    //$this->date->add(new DateInterval('PT1H'))->format('Y-m-d H:i:s'); // add 1 hour
 
   }
 

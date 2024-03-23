@@ -42,5 +42,13 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
     $router->post('logout', 'AuthController@Logout');
   });
 
+  $router->group(['prefix' => 'financeiro'], function() use ($router) {
+    $router->get('list', 'FinanceiroController@List');
+    $router->get('{id}', 'FinanceiroController@Get');
+    $router->post('', 'FinanceiroController@Post');
+    $router->put('', 'FinanceiroController@Put');
+    $router->delete('', 'FinanceiroController@Delete');
+  });
+
 
 });
