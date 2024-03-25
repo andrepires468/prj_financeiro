@@ -4,7 +4,21 @@ import Helper from "../helpers/helper.service";
 import ServiceResponseCode from "../models/service.response.code";
 
 export default {
-  async listFinanceiro(page = null, pageSize = null) {
+  async calendarioExtrato() {
+    try {
+      const url = `${endpoints.financeiro}/calendario-extrato`;
+      const result = await api.get(url)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
+  async listExtrato(page = null, pageSize = null, mes = null, ano = null) {
     try {
       const params = [
         {
@@ -15,8 +29,16 @@ export default {
           Name: 'pageSize',
           Value: pageSize
         },
+        {
+          Name: 'mes',
+          Value: mes
+        },
+        {
+          Name: 'ano',
+          Value: ano
+        },
       ]
-      const url = `${endpoints.financeiro}/list${Helper.getURLParams(params)}`;
+      const url = `${endpoints.financeiro}/extrato${Helper.getURLParams(params)}`;
       const result = await api.get(url)
       return Helper.getServiceResponse(result)
     } catch (e) {
