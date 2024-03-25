@@ -27,6 +27,29 @@ $router->group(['prefix' => env('API_VERSION')], function() use ($router) {
 
 });
 
+$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], function() use ($router) {
+
+  $router->group(['prefix' => 'auth'], function() use ($router) {
+    $router->get('refresh', 'AuthController@Refresh');
+    $router->post('logout', 'AuthController@Logout');
+  });
+
+  $router->group(['prefix' => 'financeiro'], function() use ($router) {
+
+    $router->get('calendario-extrato', 'FinanceiroController@CalendarioExtrato');
+    $router->get('extrato', 'FinanceiroController@ListExtrato');
+
+
+//    $router->get('list', 'FinanceiroController@List');
+//    $router->get('{id}', 'FinanceiroController@Get');
+//    $router->post('', 'FinanceiroController@Post');
+//    $router->put('', 'FinanceiroController@Put');
+//    $router->delete('', 'FinanceiroController@Delete');
+  });
+
+
+});
+
 $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
 
   $router->group(['prefix' => 'process'], function() use ($router) {
@@ -35,20 +58,3 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'],
 
 });
 
-$router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], function() use ($router) {
-
-  $router->group(['prefix' => 'auth'], function() use ($router) {
-    $router->post('refresh', 'AuthController@Refresh');
-    $router->post('logout', 'AuthController@Logout');
-  });
-
-  $router->group(['prefix' => 'financeiro'], function() use ($router) {
-    $router->get('list', 'FinanceiroController@List');
-    $router->get('{id}', 'FinanceiroController@Get');
-    $router->post('', 'FinanceiroController@Post');
-    $router->put('', 'FinanceiroController@Put');
-    $router->delete('', 'FinanceiroController@Delete');
-  });
-
-
-});

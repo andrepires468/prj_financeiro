@@ -3,8 +3,10 @@
 
 namespace App\Services;
 
+use App\Helpers\Pagination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Extrato;
 
 class FinanceiroService extends Service
 {
@@ -14,29 +16,69 @@ class FinanceiroService extends Service
     parent::__construct();
   }
 
-  public function List(Request $request)
+
+  public function CalendarioExtrato(Request $request)
   {
-    throw new \Exception('método não implementado');
+
+    // Definindo o mês e ano de início
+    $mes_inicio = 1;
+    $ano_inicio = 2024;
+
+    // Obtendo o mês e ano atuais
+    $mes_atual = date('n'); // Retorna o mês sem o zero à esquerda
+    $ano_atual = date('Y'); // Retorna o ano com quatro dígitos
+
+    // Array para armazenar os meses/anos
+    $meses_anos = array();
+
+    // Loop para gerar os meses/anos
+    for($ano = $ano_inicio ; $ano <= $ano_atual ; $ano++) {
+      // Define o mês inicial do primeiro ano e o mês final do último ano
+      $mes_inicio_loop = ($ano == $ano_inicio) ? $mes_inicio : 1;
+      $mes_final_loop = ($ano == $ano_atual) ? $mes_atual : 12;
+
+      for($mes = $mes_inicio_loop ; $mes <= $mes_final_loop ; $mes++) {
+        $meses_anos[] = sprintf("%02d/%d", $mes, $ano); // Formatação do mês/ano (com zero à esquerda se necessário)
+      }
+    }
+
+    return array_reverse($meses_anos);
+
   }
 
-  public function Get(Request $request)
+  public function ListExtrato(Request $request)
   {
-    throw new \Exception('método não implementado');
-  }
 
-  public function Post(Request $request)
-  {
-    throw new \Exception('método não implementado');
-  }
+    if(!$request->mes)
+      throw new \Exception('mes não passado');
 
-  public function Put(Request $request)
-  {
-    throw new \Exception('método não implementado');
-  }
+    if(!$request->ano)
+      throw new \Exception('ano não passado');
 
-  public function Delete(Request $request)
-  {
-    throw new \Exception('método não implementado');
+    $mes = $request->mes;
+    $ano = $request->ano;
+
+    // Obtém a data do primeiro dia do mês
+    $data_inicio = date('Y-m-01', strtotime("first day of {$ano}-{$mes}"));
+
+    // Obtém a data do último dia do mês
+    $data_fim = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
+
+
+    $model = Extrato::select()
+      ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
+      ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
+      ->where('BancoExtrato.IdUsuario', '=', $this->idUsuario)
+      ->orderBy('Extrato.Data');
+
+    if($request->page && $request->pageSize) {
+      $count = $model->count();
+      $items = $model->skip(($request->page - 1) * $request->pageSize)->take($request->pageSize)->get();
+      return Pagination::Paginate($items, $count, $request->page, $request->pageSize);
+    }
+
+    return $model->get();
+
   }
 
 }
