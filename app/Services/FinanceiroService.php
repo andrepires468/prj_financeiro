@@ -67,9 +67,10 @@ class FinanceiroService extends Service
 
     $model = Extrato::select()
       ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
+      ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
       ->where('BancoExtrato.IdUsuario', '=', $this->idUsuario)
-      ->orderBy('Extrato.Data');
+      ->orderByDesc('Extrato.Data');
 
     if($request->page && $request->pageSize) {
       $count = $model->count();

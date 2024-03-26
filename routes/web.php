@@ -35,16 +35,16 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
   });
 
   $router->group(['prefix' => 'financeiro'], function() use ($router) {
-
     $router->get('calendario-extrato', 'FinanceiroController@CalendarioExtrato');
     $router->get('extrato', 'FinanceiroController@ListExtrato');
+  });
 
-
-//    $router->get('list', 'FinanceiroController@List');
-//    $router->get('{id}', 'FinanceiroController@Get');
-//    $router->post('', 'FinanceiroController@Post');
-//    $router->put('', 'FinanceiroController@Put');
-//    $router->delete('', 'FinanceiroController@Delete');
+  $router->group(['prefix' => 'categoria'], function() use ($router) {
+    $router->get('list', 'CategoriaController@List');
+    $router->get('{id}', 'CategoriaController@Get');
+    $router->post('', 'CategoriaController@Post');
+    $router->put('', 'CategoriaController@Put');
+    $router->delete('', 'CategoriaController@Delete');
   });
 
 
