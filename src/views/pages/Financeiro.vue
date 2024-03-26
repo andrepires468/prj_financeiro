@@ -24,21 +24,27 @@
   <div class="row">
     <div class="col-md-7">
 
-      <div v-for="(item, index) in Extrato" :key="index">
-
-        <div class="row p-3">
-          <div class="col-md-1">
-            <b-icon-currency-dollar/>
-          </div>
-          <div class="col-md-9">
-            {{ item.Descricao }}
-          </div>
-          <div class="col-md-2">
-            {{ item.Valor }}
-          </div>
-        </div>
-
-      </div>
+      <table class="table-financeiro">
+        <tbody>
+        <tr v-for="(item, index) in Extrato" :key="index">
+          <td style="width: 50px">
+            <b style="padding: 0 0 0 10px">{{ item.DataDisplay }}</b>
+          </td>
+          <td style="width: 60px">
+            <div style="padding: 15px 20px 15px 20px" :title="item.CategoriaNome">
+              <iconMercado :icon="item.IconTag" :color="item.IconColor" :width="30" :height="30"/>
+            </div>
+          </td>
+          <td>
+            <p class="m-0 small" :style="`color: ${item.IconColor}`">{{ item.CategoriaNome }}</p>
+            <p class="m-0 small">{{ item.Descricao }}</p>
+          </td>
+          <td style="width: 80px">
+            <span style="padding: 0 10px 0 10px " :class="`small ${(item.Valor > 0)? 'text-success' : 'text-danger'}`">{{ item.Valor }}</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
 
     </div>
     <div class="col-md-5">
@@ -54,12 +60,14 @@
 <script>
 import MultselectForm from "@/components/MultselectForm";
 import financeiroService from "@/services/Financeiro.service";
-import mesesModel from '../../models/meses.model'
 import Helper from "@/helpers/helper.service";
+import iconMercado from '../../components/IconeCategoria'
+import mesesModel from '../../models/meses.model'
+import moment from "moment";
 
 export default {
   name: "Financeiro",
-  components: {MultselectForm},
+  components: {MultselectForm, iconMercado},
   data() {
     return {
       CalendarioLista: [],
@@ -79,14 +87,14 @@ export default {
       this.CalendarioLista = result.Data.map((i, index) => {
 
         const item = i.split('/')
-
-        const mesNome = mesesModel.find(j => parseInt(j.Id) == parseInt(item[0])).Nome
+        const mesItem = mesesModel.find(j => parseInt(j.Id) == parseInt(item[0]))
 
         return {
           Id: index,
           Mes: parseInt(item[0]),
           Ano: parseInt(item[1]),
-          Nome: mesNome + '/' + item[1]
+          Nome: mesItem.Nome + '/' + item[1],
+          NomeCurto: mesItem.NomeCurto
         }
 
       });
@@ -122,7 +130,12 @@ export default {
         if (!result.Success)
           throw new Error(Helper.getMessageError(result))
 
-        this.Extrato = result.Data;
+        this.Extrato = result.Data.map(i => {
+          return {
+            ...i,
+            DataDisplay: moment(i.Data, "YYYY-MM-DDTHH:mm:ss.SSS").format("DD") + '/' + this.CalendarioSel.NomeCurto
+          }
+        });
 
         swalLoading.close()
 
@@ -143,5 +156,9 @@ export default {
 </script>
 
 <style scoped>
+.table-financeiro tbody tr:hover{
+  cursor: pointer;
+  background-color: rgba(0,0,0,0.04);
+}
 
 </style>
