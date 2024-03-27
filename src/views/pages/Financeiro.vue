@@ -1,7 +1,19 @@
 <template>
 
+  <!--      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">-->
+  <!--        <div class="col p-4 d-flex flex-column position-static">-->
+  <!--          <strong class="d-inline-block mb-2 text-success">Design</strong>-->
+  <!--          <h3 class="mb-0">Post title</h3>-->
+  <!--          <div class="mb-1 text-muted">Nov 11</div>-->
+  <!--          <p class="mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>-->
+  <!--          <a href="#" class="stretched-link">Continue reading</a>-->
+  <!--        </div>-->
+  <!--        <div class="col-auto d-none d-lg-block">-->
+  <!--        </div>-->
+  <!--      </div>-->
+
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-5 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Financeiro</h1>
+    <h1>Financeiro</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
 
       <div class="me-2" style="min-width: 180px">
@@ -14,6 +26,7 @@
             placeholder=""
         />
       </div>
+
       <div class="btn-group me-2">
         <button type="button" class="btn btn-sm btn-outline-secondary" @click="getExtrato()">Aplicar</button>
         <button type="button" class="btn btn-sm btn-outline-secondary">Exportar</button>
@@ -21,7 +34,13 @@
 
     </div>
   </div>
+  <br/>
   <div class="row">
+    <div class="col-md-5">
+
+      -- graficos
+
+    </div>
     <div class="col-md-7">
 
       <table class="table-financeiro">
@@ -40,16 +59,13 @@
             <p class="m-0 small">{{ item.Descricao }}</p>
           </td>
           <td style="width: 80px">
-            <span style="padding: 0 10px 0 10px " :class="`small ${(item.Valor > 0)? 'text-success' : 'text-danger'}`">{{ item.Valor }}</span>
+            <span style="padding: 0 10px 0 10px " :class="`small ${(item.Valor > 0)? 'text-success' : 'text-danger'}`">
+              {{item.Valor}}
+            </span>
           </td>
         </tr>
         </tbody>
       </table>
-
-    </div>
-    <div class="col-md-5">
-
-      -- graficos
 
     </div>
   </div>
@@ -156,9 +172,9 @@ export default {
 </script>
 
 <style scoped>
-.table-financeiro tbody tr:hover{
+.table-financeiro tbody tr:hover {
   cursor: pointer;
-  background-color: rgba(0,0,0,0.04);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 </style>

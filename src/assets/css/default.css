@@ -5,6 +5,9 @@
     color: var(--bs-gray-600);
 }
 
+.btn{
+    border-radius: 3px;
+}
 .btn-bd-primary {
     --bd-violet-bg: #712cf9;
     --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
@@ -22,13 +25,22 @@
     --bs-btn-active-border-color: #5a23c8;
 }
 
+body {
+    background-color: var(--bs-gray-100) !important;
+}
+
+hr {
+    border-color: var(--bs-gray-500);
+}
+
 .shadow {
     box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.082) !important;
 }
 
 .content-body {
-    background-color: var(--bs-gray-100);
+    margin-top: 30px;
 }
+
 
 .offcanvas-md .offcanvas-body {
     background-color: var(--bs-white) !important;

@@ -1,7 +1,7 @@
 <template>
 
   <router-view v-slot='{ Component }'>
-    <div class="container-fluid">
+    <div class="container">
       <component :is='Component'/>
     </div>
   </router-view>
