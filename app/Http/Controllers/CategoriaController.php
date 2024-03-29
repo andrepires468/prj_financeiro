@@ -66,8 +66,8 @@ class CategoriaController extends Controller
 
     try {
 
-      $result = $this->categoriaService->Put($request);
-      return ApiResponse::GetSuccessResponse($result);
+      $this->categoriaService->Put($request);
+      return ApiResponse::GetSuccessResponse();
 
     } catch(\Exception $ex) {
       return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);

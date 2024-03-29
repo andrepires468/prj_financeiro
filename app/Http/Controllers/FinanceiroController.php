@@ -48,5 +48,20 @@ class FinanceiroController extends Controller
   }
 
 
+  public function UpdateExtrato(Request $request)
+  {
+
+    try {
+
+      $this->financeiroService->UpdateExtrato($request);
+      return ApiResponse::GetSuccessResponse([], 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
 
 }

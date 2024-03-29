@@ -37,6 +37,7 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
   $router->group(['prefix' => 'financeiro'], function() use ($router) {
     $router->get('calendario-extrato', 'FinanceiroController@CalendarioExtrato');
     $router->get('extrato', 'FinanceiroController@ListExtrato');
+    $router->put('update-extrato', 'FinanceiroController@UpdateExtrato');
   });
 
   $router->group(['prefix' => 'categoria'], function() use ($router) {

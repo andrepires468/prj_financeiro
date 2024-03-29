@@ -65,7 +65,14 @@ class FinanceiroService extends Service
     $data_fim = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
 
 
-    $model = Extrato::select()
+    $model = Extrato::selectRaw('
+      Extrato.*,
+      BancoExtrato.BancoNome,
+      BancoExtrato.IdUsuario,
+      BancoExtrato.Default BancoDefault,
+      Categoria.CategoriaNome,
+      Categoria.IconTag,
+      Categoria.IconColor')
       ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
       ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
@@ -81,5 +88,26 @@ class FinanceiroService extends Service
     return $model->get();
 
   }
+
+  public function UpdateExtrato(Request $request)
+  {
+
+    if(!$request->IdExtrato)
+      throw new \Exception('IdExtrato não passado');
+
+    $extrato = Extrato::select()
+      ->where('Id', '=', $request->IdExtrato)
+      ->first();
+
+    if(!$extrato)
+      throw new \Exception('Extrato não encontrado');
+
+    $extrato->IdCategoria = $request->IdCategoria ?? null;
+    $extrato->DescricaoPersonalizada = $request->DescricaoPersonalizada ?? null;
+    $extrato->save();
+
+
+  }
+
 
 }

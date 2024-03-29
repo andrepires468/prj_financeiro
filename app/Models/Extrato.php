@@ -20,6 +20,8 @@ class Extrato extends Model
     'Descricao' => 'required|string|max:420',
     'IdTipoExtrato' => 'required|int',
     'IdBancoExtrato' => 'required|int',
+    'IdCategoria' => 'int',
+    'DescricaoPersonalizada' => 'string|max:200',
     'CriadoEm' => 'date_format:Y-m-d H:i:s',
   ];
 
