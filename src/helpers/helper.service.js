@@ -225,5 +225,8 @@ export default {
     });
 
   },
+  formatCurrency(valor){
+    return 'R$ ' + parseFloat(valor).toFixed(2).toString().replaceAll('.', ',')
+  }
 
 }

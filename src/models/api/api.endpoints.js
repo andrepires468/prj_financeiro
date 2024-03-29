@@ -13,6 +13,7 @@ const APIEndpoints = {
 
   // endpoints of LMS models
   financeiro: APIBaseEndpoints.DataController +'/financeiro',
+  categoria: APIBaseEndpoints.DataController +'/categoria',
 }
 
 export default APIEndpoints;

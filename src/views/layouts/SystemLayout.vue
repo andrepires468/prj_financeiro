@@ -20,21 +20,21 @@
               <router-link class="nav-link" to="/financeiro">Financeiro</router-link>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarCadastro" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Cadastros
               </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-                <li><router-link class="dropdown-item" to="/categoria">Categoria</router-link></li>
+              <ul class="dropdown-menu" aria-labelledby="navbarCadastro">
+                  <li><router-link class="dropdown-item" to="/cadastro/categoria">Categoria</router-link></li>
               </ul>
             </li>
           </ul>
           <div class="d-flex">
             <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarLogin" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ Usuario.Nome }}
               </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+              <ul class="dropdown-menu" aria-labelledby="navbarLogin">
                 <li><a class="dropdown-item" @click="sair">Sair</a></li>
               </ul>
             </li>

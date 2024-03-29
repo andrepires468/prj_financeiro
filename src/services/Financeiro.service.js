@@ -64,11 +64,10 @@ export default {
       }
     }
   },
-  async registerFinanceiro(data, method) {
+  async updateExtrato(data) {
     try {
-      const result = (method == 'criar') ?
-        await api.post(endpoints.financeiro, data) :
-        await api.put(endpoints.financeiro, data)
+      const url = `${endpoints.financeiro}/update-extrato`;
+      const result = await api.put(url, data)
       return Helper.getServiceResponse(result)
     } catch (e) {
       return {

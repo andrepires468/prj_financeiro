@@ -27,9 +27,21 @@ const routes = [
         path: '/financeiro',
         name: 'Financeiro',
         component: () => import('./views/pages/Financeiro')
+      },
+      {
+        path: '/cadastro',
+        name: 'home',
+        redirect: '/cadastro',
+        children: [
+          {
+            path: '/cadastro/categoria',
+            name: 'Categoria',
+            component: () => import('./views/pages/cadastro/Categoria')
+          }
+        ]
       }
     ]
-  }
+  },
 ]
 
 export const router = createRouter({

@@ -5,9 +5,10 @@
     color: var(--bs-gray-600);
 }
 
-.btn{
+.btn {
     border-radius: 3px;
 }
+
 .btn-bd-primary {
     --bd-violet-bg: #712cf9;
     --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
@@ -35,6 +36,10 @@ hr {
 
 .shadow {
     box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.082) !important;
+}
+
+.table > :not(caption) > * > * {
+    background-color: transparent;
 }
 
 .content-body {
@@ -81,4 +86,16 @@ input.form-control {
 .offcanvas-body {
     border: none !important;
     height: calc(100vh - 38px);
+}
+
+.color-input {
+    border-radius: 2px;
+    top: 4px;
+}
+
+.color-input .box {
+    border-radius: 2px;
+    margin: 0px 10px 0px 10px;
+    width: 60px;
+    height: 30px;
 }

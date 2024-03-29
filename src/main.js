@@ -7,6 +7,7 @@ import VueSweetalert2 from 'vue-sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import { vMaska } from "maska"
+import ColorInput from "vue-color-input";
 import {router} from './router'
 
 // componentes
@@ -83,6 +84,7 @@ app.component('MultselectForm', MultselectForm)
 
 app.use(VueSweetalert2, SwalOptions)
 app.use(BootstrapIconsPlugin)
+app.use(ColorInput)
 app.use(router)
     .mount('#app')
 

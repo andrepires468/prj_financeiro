@@ -1,16 +1,10 @@
 <template>
 
-  <!--      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">-->
-  <!--        <div class="col p-4 d-flex flex-column position-static">-->
-  <!--          <strong class="d-inline-block mb-2 text-success">Design</strong>-->
-  <!--          <h3 class="mb-0">Post title</h3>-->
-  <!--          <div class="mb-1 text-muted">Nov 11</div>-->
-  <!--          <p class="mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>-->
-  <!--          <a href="#" class="stretched-link">Continue reading</a>-->
-  <!--        </div>-->
-  <!--        <div class="col-auto d-none d-lg-block">-->
-  <!--        </div>-->
-  <!--      </div>-->
+  <ModalExtrato
+      :ExtratoSel="ExtratoSel"
+      :CategoriaLista="CategoriaLista"
+      :CategoriaSel="CategoriaSel"
+  />
 
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-5 pb-2 mb-3 border-bottom">
     <h1>Financeiro</h1>
@@ -36,31 +30,50 @@
   </div>
   <br/>
   <div class="row">
-    <div class="col-md-5">
+    <div class="col-md-6">
 
-      -- graficos
+      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <div class="col p-4 d-flex flex-column position-static">
+          <strong class="d-inline-block mb-2 text-success">Design</strong>
+          <h3 class="mb-0">Post title</h3>
+          <div class="mb-1 text-muted">Nov 11</div>
+          <p class="mb-auto">
+            This is a wider card with supporting text below as a natural lead-in to additional content.
+          </p>
+          <a href="#" class="stretched-link">Continue reading</a>
+        </div>
+        <div class="col-auto d-none d-lg-block">
+        </div>
+      </div>
 
     </div>
-    <div class="col-md-7">
+    <div class="col-md-6">
 
       <table class="table-financeiro">
         <tbody>
-        <tr v-for="(item, index) in Extrato" :key="index">
-          <td style="width: 50px">
-            <b style="padding: 0 0 0 10px">{{ item.DataDisplay }}</b>
+        <tr v-for="(item, index) in Extrato" :key="index"
+            data-bs-toggle="modal"
+            data-bs-target="#modalExtrato"
+            @click="abrirModalExtrato(item, index)"
+        >
+          <td class="item-extrato-data">
+            <span>{{ item.DiaDisplay }}</span>
+            <span>{{ item.MesDisplay }}</span>
           </td>
-          <td style="width: 60px">
-            <div style="padding: 15px 20px 15px 20px" :title="item.CategoriaNome">
-              <iconMercado :icon="item.IconTag" :color="item.IconColor" :width="30" :height="30"/>
+          <td>
+            <div class="item-extrato-icon" :title="item.CategoriaNome">
+              <IconeCategoria :icon="item.IconTag"
+                           :color="item.IconColor"
+                           :width="30" :height="30"/>
             </div>
           </td>
           <td>
             <p class="m-0 small" :style="`color: ${item.IconColor}`">{{ item.CategoriaNome }}</p>
             <p class="m-0 small">{{ item.Descricao }}</p>
           </td>
-          <td style="width: 80px">
-            <span style="padding: 0 10px 0 10px " :class="`small ${(item.Valor > 0)? 'text-success' : 'text-danger'}`">
-              {{item.Valor}}
+          <td class="item-extrato-valor">
+            <span :class="`small ${(item.Valor > 0)? 'text-success' : 'text-danger'}`">
+              {{ item.Valor }}
             </span>
           </td>
         </tr>
@@ -70,25 +83,32 @@
     </div>
   </div>
 
-
 </template>
 
 <script>
 import MultselectForm from "@/components/MultselectForm";
 import financeiroService from "@/services/Financeiro.service";
+import categoriaService from "@/services/Categoria.service";
 import Helper from "@/helpers/helper.service";
-import iconMercado from '../../components/IconeCategoria'
+import IconeCategoria from '../../components/IconeCategoria'
 import mesesModel from '../../models/meses.model'
+import categoriaIconsModel from '../../models/categoria.icons.model'
 import moment from "moment";
+import ModalExtrato from "@/views/pages/ModalExtrato";
 
 export default {
   name: "Financeiro",
-  components: {MultselectForm, iconMercado},
+  components: {ModalExtrato, MultselectForm, IconeCategoria},
   data() {
     return {
       CalendarioLista: [],
       CalendarioSel: null,
-      Extrato: []
+      Extrato: [],
+      ExtratoSel: null,
+      ExtratoSelIndex: null,
+
+      CategoriaLista: [],
+      CategoriaSel: null,
     }
   },
   async mounted() {
@@ -116,13 +136,15 @@ export default {
       });
 
       if (window.localStorage.getItem('CalendarioSel')) {
-        this.CalendarioSel = JSON.parse(window.localStorage.getItem('CalendarioSel'));
+        this.CalendarioSel = JSON.parse(window.localStorage.getItem('CalendarioSel'))
 
       } else {
-        this.CalendarioSel = this.CalendarioLista[0];
+        this.CalendarioSel = this.CalendarioLista[0]
       }
 
-      await this.getExtrato();
+      await this.getExtrato()
+
+      await this.categoriaLista()
 
       swalLoading.close()
 
@@ -131,6 +153,48 @@ export default {
     }
   },
   methods: {
+    async categoriaLista() {
+
+      try {
+
+        const result = await categoriaService.listCategoria()
+        if (!result.Success)
+          throw new Error(Helper.getMessageError(result))
+
+        this.CategoriaLista = result.Data.map(i => {
+          return {
+            ...i,
+            IconSVG: categoriaIconsModel.find(j => j.IconTag == i.IconTag).IconSVG
+          }
+        })
+
+      } catch (e) {
+        Helper.messageExceptionHandler(e)
+      }
+
+    },
+    async abrirModalExtrato(item, index) {
+
+      this.ExtratoSel = item
+      this.ExtratoSelIndex = index
+      this.CategoriaSel = this.CategoriaLista.find(i => i.Id == item.IdCategoria) ?? null
+
+    },
+    setarExtrato(dados) {
+
+      this.Extrato = dados.map(i => {
+        const dia = moment(i.Data, "YYYY-MM-DDTHH:mm:ss.SSS").format("DD")
+        return {
+          ...i,
+          Data: Helper.formatDate(i.Data),
+          Valor: Helper.formatCurrency(i.Valor),
+          DiaDisplay: dia,
+          MesDisplay: this.CalendarioSel.NomeCurto,
+          DataDisplay: dia + '/' + this.CalendarioSel.NomeCurto
+        }
+      });
+
+    },
     async getExtrato() {
 
       try {
@@ -146,12 +210,7 @@ export default {
         if (!result.Success)
           throw new Error(Helper.getMessageError(result))
 
-        this.Extrato = result.Data.map(i => {
-          return {
-            ...i,
-            DataDisplay: moment(i.Data, "YYYY-MM-DDTHH:mm:ss.SSS").format("DD") + '/' + this.CalendarioSel.NomeCurto
-          }
-        });
+        this.setarExtrato(result.Data)
 
         swalLoading.close()
 
@@ -161,20 +220,39 @@ export default {
 
     }
   },
-  // watch: {
-  //   MesSel(valor, ant): {
-  //     if (valor && valor?.Id != ant?.Id) {
-  //       await Extrato()
-  //     }
-  //   }
-  // }
 }
 </script>
 
 <style scoped>
+
 .table-financeiro tbody tr:hover {
   cursor: pointer;
   background-color: rgba(0, 0, 0, 0.04);
 }
+
+.item-extrato-data {
+  width: 50px;
+  padding: 0 0 0 14px;
+  font-weight: bold;
+}
+
+.item-extrato-data span {
+  text-align: center;
+  display: block;
+}
+
+.item-extrato-data span:last-child {
+  margin-top: -8px;
+}
+
+.item-extrato-icon {
+  padding: 16px 22px 16px 22px;
+}
+
+.item-extrato-valor {
+  width: 110px;
+  padding: 0 14px 0 14px;
+}
+
 
 </style>
