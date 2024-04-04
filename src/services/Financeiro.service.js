@@ -18,7 +18,7 @@ export default {
       }
     }
   },
-  async listExtrato(page = null, pageSize = null, mes = null, ano = null) {
+  async listaExtrato(page = null, pageSize = null, mes = null, ano = null) {
     try {
       const params = [
         {
@@ -38,7 +38,7 @@ export default {
           Value: ano
         },
       ]
-      const url = `${endpoints.financeiro}/extrato${Helper.getURLParams(params)}`;
+      const url = `${endpoints.financeiro}/lista-extrato${Helper.getURLParams(params)}`;
       const result = await api.get(url)
       return Helper.getServiceResponse(result)
     } catch (e) {

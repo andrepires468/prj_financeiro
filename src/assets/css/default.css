@@ -42,10 +42,30 @@ hr {
     background-color: transparent;
 }
 
+.text-align-end {
+    text-align: left;
+}
+
+.text-align-end {
+    text-align: right;
+}
+
+.text-align-center {
+    text-align: center;
+}
+
 .content-body {
     margin-top: 30px;
 }
 
+.icon {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-fill{
+    display: block;
+}
 
 .offcanvas-md .offcanvas-body {
     background-color: var(--bs-white) !important;
@@ -98,4 +118,20 @@ input.form-control {
     margin: 0px 10px 0px 10px;
     width: 60px;
     height: 30px;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-left {
+    float: left;
+}
+
+.extrato-entrada {
+    color: #2aa525;
+}
+
+.extrato-saida {
+    color: #cb4a4a;
 }

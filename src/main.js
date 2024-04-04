@@ -83,7 +83,7 @@ app.component('DatePicker', DatePicker)
 app.component('MultselectForm', MultselectForm)
 
 app.use(VueSweetalert2, SwalOptions)
-app.use(BootstrapIconsPlugin)
+app.use(BootstrapIconsPlugin) // https://www.npmjs.com/package/bootstrap-icons-vue
 app.use(ColorInput)
 app.use(router)
     .mount('#app')

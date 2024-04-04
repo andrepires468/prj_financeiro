@@ -11,6 +11,8 @@ const APIEndpoints = {
   authLogout: APIBaseEndpoints.AuthController + '/logout',
   authRefreshToken: APIBaseEndpoints.AuthController + '/refresh',
 
+  process: APIBaseEndpoints.DataController +'/process',
+
   // endpoints of LMS models
   financeiro: APIBaseEndpoints.DataController +'/financeiro',
   categoria: APIBaseEndpoints.DataController +'/categoria',

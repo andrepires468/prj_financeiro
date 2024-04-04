@@ -15,11 +15,24 @@
 
               <div class="modal-body" v-if="ExtratoSel">
 
-                <h6><strong>{{ ExtratoSel.BancoNome }}</strong> - {{ ExtratoSel.Data }}</h6>
-                <p class="text-muted small">{{ ExtratoSel.Identificador }}</p>
+                <p>
+                  <strong>{{ ExtratoSel.BancoNome }}</strong>
+                  <span class="float-right">{{ ExtratoSel.Data }}</span>
+                </p>
+
+                <div class="row">
+                  <div class="col-9 small">
+                    <p>{{ ExtratoSel.Descricao }}</p>
+                  </div>
+                  <div class="col-3">
+                    <p :class="`${(ExtratoSel.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'} text-align-end`">
+                      {{ ExtratoSel.Valor }}
+                    </p>
+                  </div>
+                </div>
 
                 <div class="form-group">
-                  <label class="form-control-label">Categoria</label>
+                  <label class="form-control-label"><b-icon-tag class="icon"/> Categoria Item Extrato</label>
                   <input type="text" class="form-control" id="pesquisaCategoria" v-model="pesquisaCategoria">
                   <div class="categoria-lista">
                     <div class="row categoria-lista-item p-2"
@@ -28,8 +41,8 @@
                          @click="CategoriaSel = categoria">
                       <div class="col-2">
                         <IconeCategoria :icon="categoria.IconTag"
-                                     :color="categoria.IconColor"
-                                     :width="30" :height="30"/>
+                                        :color="categoria.IconColor"
+                                        :width="30" :height="30"/>
                       </div>
                       <div class="col-10 p-2" :style="`color: ${categoria.IconColor}`">
                         {{ categoria.CategoriaNome }}
@@ -38,41 +51,39 @@
                   </div>
                 </div>
 
-                <div v-if="CategoriaSel">
-                  <div class="row">
+
+                <div class="form-group" v-if="CategoriaSel">
+                  <div class="row p-2">
                     <div class="col-2">
                       <IconeCategoria :icon="CategoriaSel.IconTag"
-                                   :color="CategoriaSel.IconColor"
-                                   :width="30" :height="30"/>
+                                      :color="CategoriaSel.IconColor"
+                                      :width="30" :height="30"/>
                     </div>
-                    <div class="col-10 p-2" :style="`color: ${CategoriaSel.IconColor}`">
+                    <div class="col-6" :style="`color: ${CategoriaSel.IconColor}`">
                       {{ CategoriaSel.CategoriaNome }}
+                    </div>
+                    <div class="col-4">
+                      <a class="btn btn-sm btn-fill btn-outline-danger" @click="CategoriaSel = null">
+                        <b-icon-x class="icon"/> Remover
+                      </a>
                     </div>
                   </div>
                 </div>
                 <div v-else>
-                  <p class="text-muted small">Categoria não selecionada</p>
+                  <p class="text-muted small align-center">Categoria não selecionada</p>
                 </div>
 
-                <hr/>
 
                 <div class="form-group">
-                  <label class="form-control-label">Descrição Personalizada</label>
-                  <input type="text" class="form-control" v-model="descricaoPersonalizada">
-                </div>
-
-                <div class="row">
-                  <div class="col-8 small">
-                    {{ ExtratoSel.Descricao }}
-                  </div>
-                  <div class="col-4 text-danger">
-                    {{ ExtratoSel.Valor }}
-                  </div>
+                  <label class="form-control-label">
+                    <b-icon-pencil-square class="icon"/>
+                    Descrição Personalizada</label>
+                  <textarea class="form-control" v-model="descricaoPersonalizada"/>
                 </div>
 
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" id="fecharModal">Fechar</button>
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" id="fecharModal">Cancelar</button>
                 <button type="button" class="btn btn-primary" @click="updateExtratoSel">Salvar</button>
               </div>
             </div>
@@ -100,16 +111,13 @@ export default {
   data() {
     return {
       pesquisaCategoria: null,
-      descricaoPersonalizada: null,
+      descricaoPersonalizada: null
     }
   },
   methods: {
     async updateExtratoSel() {
 
       try {
-
-        if (!this.ExtratoSel)
-          throw new Error('Extrato não selecionado')
 
         document.getElementById('fecharModal').click();
 
@@ -124,12 +132,10 @@ export default {
           throw new Error(Helper.getMessageError(result))
 
         this.ExtratoSel.DescricaoPersonalizada = this.descricaoPersonalizada;
-        if (this.CategoriaSel) {
-          this.ExtratoSel.IdCategoria = this.CategoriaSel.Id
-          this.ExtratoSel.CategoriaNome = this.CategoriaSel.CategoriaNome
-          this.ExtratoSel.IconTag = this.CategoriaSel.IconTag
-          this.ExtratoSel.IconColor = this.CategoriaSel.IconColor
-        }
+        this.ExtratoSel.IdCategoria = this.CategoriaSel?.Id ?? null
+        this.ExtratoSel.CategoriaNome = this.CategoriaSel?.CategoriaNome ?? null
+        this.ExtratoSel.IconTag = this.CategoriaSel?.IconTag ?? null
+        this.ExtratoSel.IconColor = this.CategoriaSel?.IconColor ?? null
 
         swalToast.fire('', 'extrato atualizado', 'success')
 
@@ -140,10 +146,10 @@ export default {
 
     },
   },
-  watch:{
-    ExtratoSel (){
+  watch: {
+    ExtratoSel() {
       this.pesquisaCategoria = null
-      this.descricaoPersonalizada =  this.ExtratoSel.DescricaoPersonalizada;
+      this.descricaoPersonalizada = this.ExtratoSel.DescricaoPersonalizada;
     }
   }
 }

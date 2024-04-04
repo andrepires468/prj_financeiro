@@ -10,6 +10,10 @@
     <h1>Financeiro</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
 
+<!--      <button type="button" class="btn btn-sm btn-outline-secondary" @click="categorizarExtrato">-->
+<!--        Categorizar-->
+<!--      </button>-->
+
       <div class="me-2" style="min-width: 180px">
         <MultselectForm
             :options="CalendarioLista"
@@ -22,8 +26,14 @@
       </div>
 
       <div class="btn-group me-2">
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="getExtrato()">Aplicar</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary">Exportar</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @click="aplicarFiltroExtrato">
+          <b-icon-search class="icon"/>
+          Aplicar
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato">
+          <b-icon-database-fill-down class="icon"/>
+          Sincronizar Extrato
+        </button>
       </div>
 
     </div>
@@ -49,30 +59,38 @@
     </div>
     <div class="col-md-6">
 
+
+      <div class="alert alert-warning" v-if="Extrato.filter( i => !i.IdCategoria).length > 0">
+        Restam {{ Extrato.filter(i => !i.IdCategoria).length }} item(s) para classificar
+      </div>
+
       <table class="table-financeiro">
         <tbody>
         <tr v-for="(item, index) in Extrato" :key="index"
             data-bs-toggle="modal"
             data-bs-target="#modalExtrato"
-            @click="abrirModalExtrato(item, index)"
-        >
-          <td class="item-extrato-data">
+            @click="abrirModalExtrato(item, index)">
+          <td :class="`item-extrato-data ${(!Extrato[index - 1] || (item.DataDisplay != Extrato[index - 1].DataDisplay)) ? '' : 'item-extrato-data-repet'}`">
             <span>{{ item.DiaDisplay }}</span>
             <span>{{ item.MesDisplay }}</span>
           </td>
           <td>
             <div class="item-extrato-icon" :title="item.CategoriaNome">
               <IconeCategoria :icon="item.IconTag"
-                           :color="item.IconColor"
-                           :width="30" :height="30"/>
+                              :color="item.IconColor"
+                              :width="30" :height="30"/>
             </div>
           </td>
           <td>
             <p class="m-0 small" :style="`color: ${item.IconColor}`">{{ item.CategoriaNome }}</p>
+            <p class="m-0 small" v-if="item.DescricaoPersonalizada">
+              <b-icon-pencil-square class="icon"/>
+              {{ item.DescricaoPersonalizada }}
+            </p>
             <p class="m-0 small">{{ item.Descricao }}</p>
           </td>
           <td class="item-extrato-valor">
-            <span :class="`small ${(item.Valor > 0)? 'text-success' : 'text-danger'}`">
+            <span :class="`small ${(item.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'}`">
               {{ item.Valor }}
             </span>
           </td>
@@ -89,6 +107,7 @@
 import MultselectForm from "@/components/MultselectForm";
 import financeiroService from "@/services/Financeiro.service";
 import categoriaService from "@/services/Categoria.service";
+import processService from "@/services/Process.service";
 import Helper from "@/helpers/helper.service";
 import IconeCategoria from '../../components/IconeCategoria'
 import mesesModel from '../../models/meses.model'
@@ -112,9 +131,10 @@ export default {
     }
   },
   async mounted() {
+
     try {
 
-      swalLoading.fire('', 'Aguarde...')
+      swalLoading.fire('', 'Carregando Extrato, aguarde...')
 
       const result = await financeiroService.calendarioExtrato()
       if (!result.Success)
@@ -153,6 +173,18 @@ export default {
     }
   },
   methods: {
+    // async categorizarExtrato(){
+    //
+    //   const data = {
+    //     mes: this.CalendarioSel.Mes,
+    //     ano: this.CalendarioSel.Ano
+    //   }
+    //
+    //   const result = await processService.categorizarExtrato(data)
+    //   if (!result.Success)
+    //     throw new Error(Helper.getMessageError(result))
+    //
+    // },
     async categoriaLista() {
 
       try {
@@ -180,6 +212,21 @@ export default {
       this.CategoriaSel = this.CategoriaLista.find(i => i.Id == item.IdCategoria) ?? null
 
     },
+    async aplicarFiltroExtrato() {
+
+      try {
+
+        swalLoading.fire('', 'Carregando Extrato, aguarde...')
+
+        await this.getExtrato();
+
+        swalLoading.close()
+
+      } catch (e) {
+        Helper.messageExceptionHandler(e)
+      }
+
+    },
     setarExtrato(dados) {
 
       this.Extrato = dados.map(i => {
@@ -197,22 +244,51 @@ export default {
     },
     async getExtrato() {
 
+      if (!this.CalendarioSel)
+        throw new Error('Selecione um mês|warning');
+
+      window.localStorage.setItem('CalendarioSel', JSON.stringify(this.CalendarioSel))
+
+      const result = await financeiroService.listaExtrato(null, null, this.CalendarioSel.Mes, this.CalendarioSel.Ano)
+      if (!result.Success)
+        throw new Error(Helper.getMessageError(result))
+
+      this.setarExtrato(result.Data)
+
+    },
+    async sincronizarExtrato() {
+
       try {
 
-        swalLoading.fire('', 'Carregando Extrato...')
+        swalLoading.fire('', 'Sincronizando Extrato, aguarde...')
 
-        if (!this.CalendarioSel)
-          throw new Error('Selecione um mês|warning');
-
-        window.localStorage.setItem('CalendarioSel', JSON.stringify(this.CalendarioSel))
-
-        const result = await financeiroService.listExtrato(null, null, this.CalendarioSel.Mes, this.CalendarioSel.Ano)
+        const result = await processService.updateExtrato({})
         if (!result.Success)
           throw new Error(Helper.getMessageError(result))
 
-        this.setarExtrato(result.Data)
+        if (!result.Data.emails_lidos) {
 
-        swalLoading.close()
+          swalToast.fire('', 'Nenhum novo extrato encontrado', 'info')
+
+        } else {
+
+          await swalAlert.fire({
+            title: 'Extrato Sincronizado',
+            html: `<p>${result.Data.emails_lidos} emails,
+                   ${result.Data.itens_listados} itens encontrados,
+                   <b>${result.Data.itens_incluidos} novos itens importados</b></p>`,
+            icon: 'success',
+            confirmButtonText: 'OK',
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+
+              swalLoading.fire('', 'Carregando Extrato...')
+              await this.getExtrato()
+              swalLoading.close();
+
+            }
+          })
+        }
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
@@ -236,6 +312,12 @@ export default {
   font-weight: bold;
 }
 
+.item-extrato-data-repet {
+  font-weight: normal;
+  color: var(--bs-gray-400);
+  font-size: 14px;
+}
+
 .item-extrato-data span {
   text-align: center;
   display: block;
@@ -246,13 +328,12 @@ export default {
 }
 
 .item-extrato-icon {
-  padding: 16px 22px 16px 22px;
+  padding: 20px 20px 20px 20px;
 }
 
 .item-extrato-valor {
   width: 110px;
   padding: 0 14px 0 14px;
 }
-
 
 </style>
