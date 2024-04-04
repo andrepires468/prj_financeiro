@@ -7,12 +7,13 @@ use DateTime;
 class Functions
 {
 
-  public static function formatDate($dataString){
+  public static function formatDate($dataString)
+  {
 
     // Criar um objeto DateTime a partir da string de data
     $dataObjeto = DateTime::createFromFormat('d/m/Y', $dataString);
 
-    if (!$dataObjeto)
+    if(!$dataObjeto)
       throw new \Exception('erro');
 
     // Formatar a data no novo formato
@@ -94,12 +95,13 @@ class Functions
     return $uuid;
   }
 
-  public static function maskEmail($email){
+  public static function maskEmail($email)
+  {
 
     $emailEx = explode("@", $email);
 
     $mask = "";
-    for($i = 0; $i < strlen($emailEx[0]) - 4; $i++){
+    for($i = 0 ; $i < strlen($emailEx[0]) - 4 ; $i++) {
       $mask .= "*";
     }
 
@@ -114,6 +116,25 @@ class Functions
       return $item[$fieldName] === $desiredValue;
     }));
 
+  }
+
+  public static function limparTexto($texto)
+  {
+    // Remover caracteres não alfanuméricos e converter para minúsculas
+
+    $texto = iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
+    $texto = preg_replace('/[^a-zA-Z0-9\s]/', '', $texto);
+    $texto = strtolower($texto);
+    // Remover espaços extras
+    $texto = trim(preg_replace('/\s+/', ' ', $texto));
+    return $texto;
+  }
+
+  public static function tokenizarTexto($texto)
+  {
+    // Tokenização simples usando espaço em branco como delimitador
+    $tokens = explode(' ', $texto);
+    return $tokens;
   }
 
 }

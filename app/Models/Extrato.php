@@ -22,11 +22,12 @@ class Extrato extends Model
     'IdBancoExtrato' => 'required|int',
     'IdCategoria' => 'int',
     'DescricaoPersonalizada' => 'string|max:200',
+    'DescricaoTokens' => 'string',
     'CriadoEm' => 'date_format:Y-m-d H:i:s',
   ];
 
   protected $hidden = [
-    'CriadoEm',
+    'CriadoEm'
   ];
 
 }

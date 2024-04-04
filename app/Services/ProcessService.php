@@ -4,6 +4,7 @@ namespace App\Services;
 
 
 use App\Helpers\Functions;
+use App\Models\BancoExtrato;
 use App\Models\Extrato;
 use Illuminate\Http\Request;
 
@@ -16,12 +17,27 @@ class ProcessService extends Service
     parent::__construct();
   }
 
-
-  public function Update(Request $request)
+  public function ImportEstrato(Request $request)
   {
 
-    $user = utf8_encode(env('GMAIL_IMAP_USER'));
-    $pass = utf8_encode(str_replace('_', ' ', env('GMAIL_IMAP_PASS')));
+    $BancoExtrato = BancoExtrato::select()
+      ->where('IdUsuario', '=', $this->idUsuario)
+      ->where('BancoNome', '=', 'Nubank')
+      ->first();
+
+    if(!$BancoExtrato)
+      throw new \Exception('configuração de banco não encontrada');
+
+    if(!$BancoExtrato->GmailUser)
+      throw new \Exception('GMAIL user não configurado');
+
+    if(!$BancoExtrato->GmailPass)
+      throw new \Exception('GMAIL IMAP pass não configurado');
+
+    $idBancoExtrato = $BancoExtrato->Id;
+
+    $user = utf8_encode(env($BancoExtrato->GmailUser));
+    $pass = utf8_encode(str_replace('_', ' ', env($BancoExtrato->GmailPass)));
 
     $listados = 0;
     $incluidos = 0;
@@ -31,7 +47,6 @@ class ProcessService extends Service
     $mailbox = imap_open('{imap.gmail.com:993/imap/ssl/novalidate-cert}INBOX', $user, $pass);
 
     // Definir critérios de pesquisa (por exemplo, o endereço do remetente)
-//    $search_criteria = 'FROM "todomundo@nubank.com.br"';
     $search_criteria = 'UNSEEN FROM "@nubank.com.br" SUBJECT "Extrato da sua conta do Nubank"';
     $mails = imap_search($mailbox, $search_criteria);
 
@@ -79,7 +94,7 @@ class ProcessService extends Service
               $extrato->Identificador = $row[2];
               $extrato->Descricao = $row[3];
               $extrato->IdTipoExtrato = 1; // debito
-              $extrato->IdBancoExtrato = 1; // nubank
+              $extrato->IdBancoExtrato = $idBancoExtrato; // nubank
               $extrato->save();
 
               $incluidos++;
@@ -104,5 +119,58 @@ class ProcessService extends Service
     ];
 
   }
+
+//  private function categorizarExtratoPassado($Extrato)
+//  {
+//
+//    foreach($Extrato as $extrato) {
+//
+//    }
+//
+//  }
+//
+//  private function tokenizarExtrato($Extrato)
+//  {
+//
+//    foreach($Extrato as $extrato) {
+//      $descricao = Functions::limparTexto($extrato->Descricao);
+//      $descricao_tokens = json_encode(Functions::tokenizarTexto($descricao));
+//      $extrato->DescricaoTokens = $descricao_tokens;
+//      $extrato->save();
+//    }
+//
+//  }
+//
+//  public function CategorizarExtrato(Request $request)
+//  {
+//
+//    if(!$request->mes)
+//      throw new \Exception('mes não passado');
+//
+//    if(!$request->ano)
+//      throw new \Exception('ano não passado');
+//
+//    $mes = $request->mes;
+//    $ano = $request->ano;
+//
+//    $Extrato = Extrato::select()
+//      ->whereNull('Extrato.DescricaoTokens')
+//      ->get();
+//
+//    $this->tokenizarExtrato($Extrato);
+//
+//    // Obtém a data do primeiro dia do mês
+//    $data_inicio = date('Y-m-01', strtotime("first day of {$ano}-{$mes}"));
+//
+//    // Obtém a data do último dia do mês
+//    $data_fim = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
+//
+//    $Extrato = Extrato::select()
+//      ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
+//      ->get();
+//
+//    $this->categorizarExtratoPassado($Extrato);
+//
+//  }
 
 }

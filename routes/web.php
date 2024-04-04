@@ -36,7 +36,7 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
 
   $router->group(['prefix' => 'financeiro'], function() use ($router) {
     $router->get('calendario-extrato', 'FinanceiroController@CalendarioExtrato');
-    $router->get('extrato', 'FinanceiroController@ListExtrato');
+    $router->get('lista-extrato', 'FinanceiroController@ListaExtrato');
     $router->put('update-extrato', 'FinanceiroController@UpdateExtrato');
   });
 
@@ -48,14 +48,18 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
     $router->delete('', 'CategoriaController@Delete');
   });
 
+  $router->group(['prefix' => 'process'], function() use ($router) {
+    $router->post('import-extrato', 'ProcessController@ImportEstrato');
+    $router->post('categorizar-extrato', 'ProcessController@CategorizarExtrato');
+  });
 
 });
 
 $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'autenticacao'], function() use ($router) {
 
-  $router->group(['prefix' => 'process'], function() use ($router) {
-    $router->post('update', 'ProcessController@Update');
-  });
+//  $router->group(['prefix' => 'process'], function() use ($router) {
+//    $router->post('update', 'ProcessController@Update');
+//  });
 
 });
 

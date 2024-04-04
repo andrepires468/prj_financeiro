@@ -46,7 +46,7 @@ class FinanceiroService extends Service
 
   }
 
-  public function ListExtrato(Request $request)
+  public function ListaExtrato(Request $request)
   {
 
     if(!$request->mes)
@@ -65,14 +65,15 @@ class FinanceiroService extends Service
     $data_fim = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
 
 
-    $model = Extrato::selectRaw('
+    $model = Extrato::selectRaw("
       Extrato.*,
+      (case when Extrato.Valor > 0 then 'entrada' else 'saida' end) Tipo,
       BancoExtrato.BancoNome,
       BancoExtrato.IdUsuario,
       BancoExtrato.Default BancoDefault,
       Categoria.CategoriaNome,
       Categoria.IconTag,
-      Categoria.IconColor')
+      Categoria.IconColor")
       ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
       ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])

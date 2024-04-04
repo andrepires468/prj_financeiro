@@ -33,12 +33,12 @@ class FinanceiroController extends Controller
   }
 
 
-  public function ListExtrato(Request $request)
+  public function ListaExtrato(Request $request)
   {
 
     try {
 
-      $result = $this->financeiroService->ListExtrato($request);
+      $result = $this->financeiroService->ListaExtrato($request);
       return ApiResponse::GetSuccessResponse($result);
 
     } catch(\Exception $ex) {

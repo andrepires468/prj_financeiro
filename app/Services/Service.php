@@ -19,9 +19,10 @@ class Service
   public function __construct()
   {
 
-    $result = DB::connection('home')->select('select current_timestamp() datetime');
+//    $result = DB::connection('home')->select('select current_timestamp() datetime');
+//    $result[0]->datetime
 
-    $this->date = new DateTime($result[0]->datetime);
+    $this->date = new DateTime();
     //$this->date->format("Y-m-d H:i:s"); // format
     //$this->date->add(new DateInterval('PT1H'))->format('Y-m-d H:i:s'); // add 1 hour
 
