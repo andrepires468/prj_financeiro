@@ -47,9 +47,16 @@
           <strong class="d-inline-block mb-2 text-success">Design</strong>
           <h3 class="mb-0">Post title</h3>
           <div class="mb-1 text-muted">Nov 11</div>
-          <p class="mb-auto">
-            This is a wider card with supporting text below as a natural lead-in to additional content.
-          </p>
+
+          <Bar
+              id="my-chart-id"
+              :options="chartOptions"
+              :data="chartData"
+          />
+
+
+
+
           <a href="#" class="stretched-link">Continue reading</a>
         </div>
         <div class="col-auto d-none d-lg-block">
@@ -114,10 +121,14 @@ import mesesModel from '../../models/meses.model'
 import categoriaIconsModel from '../../models/categoria.icons.model'
 import moment from "moment";
 import ModalExtrato from "@/views/pages/ModalExtrato";
+import { Bar } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
   name: "Financeiro",
-  components: {ModalExtrato, MultselectForm, IconeCategoria},
+  components: {ModalExtrato, MultselectForm, IconeCategoria, Bar},
   data() {
     return {
       CalendarioLista: [],
@@ -128,6 +139,15 @@ export default {
 
       CategoriaLista: [],
       CategoriaSel: null,
+
+      chartData: {
+        labels: [ 'January', 'February', 'March' ],
+        datasets: [ { data: [40, 20, 12] } ]
+      },
+      chartOptions: {
+        responsive: true
+      }
+
     }
   },
   async mounted() {
