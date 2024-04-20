@@ -30,8 +30,11 @@
           <b-icon-search class="icon"/>
           Aplicar
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato">
-          <b-icon-database-fill-down class="icon"/>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato" :disabled="isSync">
+          <b-icon-database-fill-down class="icon" v-if="!isSync"/>
+          <div class="spinner-border text-secondary spinner-border-sm" role="status" v-else>
+            <span class="visually-hidden">Loading...</span>
+          </div>
           Sincronizar Extrato
         </button>
       </div>
@@ -131,6 +134,7 @@ export default {
   components: {ModalExtrato, MultselectForm, IconeCategoria, Bar},
   data() {
     return {
+      isSync: false,
       CalendarioLista: [],
       CalendarioSel: null,
       Extrato: [],
@@ -146,7 +150,7 @@ export default {
       },
       chartOptions: {
         responsive: true
-      }
+      },
 
     }
   },
@@ -280,7 +284,8 @@ export default {
 
       try {
 
-        swalLoading.fire('', 'Sincronizando Extrato, aguarde...')
+        //swalLoading.fire('', 'Sincronizando Extrato, aguarde...')
+        this.isSync = true;
 
         const result = await processService.updateExtrato({})
         if (!result.Success)
@@ -309,6 +314,8 @@ export default {
             }
           })
         }
+
+        this.isSync = false;
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
