@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Helpers\Functions;
 use App\Models\BancoExtrato;
 use App\Models\Extrato;
+use App\Models\Fechamento;
 use Illuminate\Http\Request;
 
 
@@ -110,6 +111,9 @@ class ProcessService extends Service
 
       } // foreach emails
 
+      if($incluidos)
+        $this->Fechamento();
+
     } // if emails
 
     return [
@@ -119,6 +123,61 @@ class ProcessService extends Service
     ];
 
   }
+
+  public function Fechamento()
+  {
+
+    $dataHorAtual = $this->date->format('Y-m-d H:i:s');
+
+    // Definindo o mês e ano de início
+    $mes_inicio = env('MES_INICIO');
+    $ano_inicio = env('ANO_INICIO');
+
+    $mes_atual = $this->date->format("m");
+    $ano_atual = $this->date->format("Y");
+
+    $data_atual = date('Y-m-01', strtotime("first day of {$ano_inicio}-{$mes_inicio}"));
+    $data_final = date('Y-m-01', strtotime("first day of {$ano_atual}-{$mes_atual}"));
+
+    while($data_atual < $data_final) {
+
+      $data_base = date('Y-m-01', strtotime('-1 month', strtotime($data_atual)));
+      $data_inicio_mes = date('Y-m-01', strtotime("first day of", strtotime($data_atual)));
+      $data_fim_mes = date('Y-m-t', strtotime("last day of", strtotime($data_atual)));
+
+      $fechamento_atual = Extrato::selectRaw("
+          (coalesce(sum(Extrato.Valor), 0)  +
+          (
+            -- fechamentos anteriores
+            select
+            coalesce(sum(Fechamento.ValorFechado), 0)
+            from Fechamento
+            where Fechamento.DataBase = ?
+          )) SaldoFechamento", [$data_base])
+        ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+        ->first();
+
+      if(!$fechamento_atual)
+        throw new \Exception('Fechamento não canculado');
+
+
+      $fechamento = Fechamento::select()->where('DataBase', '=', $data_inicio_mes)->first();
+
+      if(!$fechamento) {
+        $fechamento = new Fechamento();
+        $fechamento->DataBase = $data_inicio_mes;
+      }
+
+      $fechamento->ValorFechado = $fechamento_atual->SaldoFechamento;
+      $fechamento->AlteradoEm = $dataHorAtual;
+      $fechamento->save();
+
+      $data_atual = date('Y-m-01', strtotime('+1 month', strtotime($data_atual)));
+
+    } // while
+
+  }
+
 
 //  private function categorizarExtratoPassado($Extrato)
 //  {

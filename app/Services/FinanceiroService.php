@@ -21,8 +21,8 @@ class FinanceiroService extends Service
   {
 
     // Definindo o mês e ano de início
-    $mes_inicio = 1;
-    $ano_inicio = 2023;
+    $mes_inicio = env('MES_INICIO');
+    $ano_inicio = env('ANO_INICIO');
 
     // Obtendo o mês e ano atuais
     $mes_atual = date('n'); // Retorna o mês sem o zero à esquerda

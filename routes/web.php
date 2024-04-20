@@ -51,6 +51,7 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
   $router->group(['prefix' => 'process'], function() use ($router) {
     $router->post('import-extrato', 'ProcessController@ImportEstrato');
     $router->post('categorizar-extrato', 'ProcessController@CategorizarExtrato');
+    $router->post('fechamento', 'ProcessController@Fechamento');
   });
 
 });

@@ -49,4 +49,19 @@ class ProcessController extends Controller
 
   }
 
+  public function Fechamento(Request $request)
+  {
+
+    try {
+
+      $result = $this->processService->Fechamento($request);
+
+      return ApiResponse::GetSuccessResponse($result, 'Processo Concluído');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, 'bad request', Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
 }
