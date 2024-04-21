@@ -10,9 +10,9 @@
     <h1>Financeiro</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
 
-<!--      <button type="button" class="btn btn-sm btn-outline-secondary" @click="categorizarExtrato">-->
-<!--        Categorizar-->
-<!--      </button>-->
+      <!--      <button type="button" class="btn btn-sm btn-outline-secondary" @click="categorizarExtrato">-->
+      <!--        Categorizar-->
+      <!--      </button>-->
 
       <div class="me-2" style="min-width: 180px">
         <MultselectForm
@@ -31,11 +31,18 @@
           Aplicar
         </button>
         <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato" :disabled="isSync">
-          <b-icon-database-fill-down class="icon" v-if="!isSync"/>
-          <div class="spinner-border text-secondary spinner-border-sm" role="status" v-else>
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          Sincronizar Extrato
+
+          <span v-if="isSync">
+            <div class="spinner-border text-secondary spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            Sincronizando Extrato...
+          </span>
+
+          <span v-if="!isSync">
+            <b-icon-database-fill-down class="icon"/> Sincronizar Extrato
+          </span>
+
         </button>
       </div>
 
@@ -56,8 +63,6 @@
               :options="chartOptions"
               :data="chartData"
           />
-
-
 
 
           <a href="#" class="stretched-link">Continue reading</a>
@@ -124,8 +129,8 @@ import mesesModel from '../../models/meses.model'
 import categoriaIconsModel from '../../models/categoria.icons.model'
 import moment from "moment";
 import ModalExtrato from "@/views/pages/ModalExtrato";
-import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+import {Bar} from 'vue-chartjs'
+import {Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale} from 'chart.js'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
@@ -145,8 +150,8 @@ export default {
       CategoriaSel: null,
 
       chartData: {
-        labels: [ 'January', 'February', 'March' ],
-        datasets: [ { data: [40, 20, 12] } ]
+        labels: ['January', 'February', 'March'],
+        datasets: [{data: [40, 20, 12]}]
       },
       chartOptions: {
         responsive: true
