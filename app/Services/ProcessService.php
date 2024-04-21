@@ -111,7 +111,7 @@ class ProcessService extends Service
 
       } // foreach emails
 
-      if($incluidos)
+      if($incluidos > 0)
         $this->Fechamento();
 
     } // if emails
