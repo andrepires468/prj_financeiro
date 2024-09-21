@@ -59,9 +59,10 @@
           <div class="mb-1 text-muted">Nov 11</div>
 
           <Bar
+              v-if="ChartUltimosMeses"
               id="my-chart-id"
               :options="chartOptions"
-              :data="chartData"
+              :data="ChartUltimosMeses"
           />
 
 
@@ -131,8 +132,9 @@ import moment from "moment";
 import ModalExtrato from "@/views/pages/ModalExtrato";
 import {Bar} from 'vue-chartjs'
 import {Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale} from 'chart.js'
+import ChartDataLabels from 'chartjs-plugin-datalabels'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels)
 
 export default {
   name: "Financeiro",
@@ -150,12 +152,44 @@ export default {
       CategoriaSel: null,
 
       chartData: {
-        labels: ['January', 'February', 'March'],
-        datasets: [{data: [40, 20, 12]}]
+        labels: ['Janeiro', 'Fevereiro', 'Março'],
+        datasets: [
+          {
+            label: 'Entrada',
+            backgroundColor: '#4da945',
+            data: [1820.10, 1633.35, 992.98]
+          },
+          {
+            label: 'Saída',
+            backgroundColor: '#f87979',
+            data: [1820.10, 1633.35, 992.98]
+          }
+        ]
       },
       chartOptions: {
-        responsive: true
+        responsive: true,
+        scales: {
+          y: {
+            ticks: {
+              callback: function (value) {
+                return 'R$ ' + value.toFixed(2).replace('.', ',');
+              }
+            }
+          }
+        },
+        plugins: {
+          datalabels: {
+            formatter: function(value) {
+              return value.toFixed(0).replace('.', ',');
+            },
+            color: '#5a5a5a', // Cor dos rótulos
+            anchor: 'end',
+            align: 'top'
+          }
+        },
       },
+
+      ChartUltimosMeses: null,
 
     }
   },
@@ -196,6 +230,8 @@ export default {
       await this.categoriaLista()
 
       swalLoading.close()
+
+      await this.chartUltimosMeses();
 
     } catch (e) {
       Helper.messageExceptionHandler(e)
@@ -321,6 +357,24 @@ export default {
         }
 
         this.isSync = false;
+
+      } catch (e) {
+        Helper.messageExceptionHandler(e)
+      }
+
+    },
+    async chartUltimosMeses() {
+
+      try {
+
+        this.ChartUltimosMeses = null
+
+        const result = await financeiroService.chartUltimosMeses()
+        if (!result.Success)
+          throw new Error(Helper.getMessageError(result))
+
+        this.ChartUltimosMeses = result.Data
+
 
       } catch (e) {
         Helper.messageExceptionHandler(e)

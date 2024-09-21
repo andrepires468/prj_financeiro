@@ -77,5 +77,19 @@ export default {
         Success: false,
       }
     }
-  }
+  },
+  async chartUltimosMeses() {
+    try {
+      const url = `${endpoints.financeiro}/chart-ultimos-meses`;
+      const result = await api.get(url)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
 }

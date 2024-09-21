@@ -32,10 +32,12 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-control-label"><b-icon-tag class="icon"/> Categoria Item Extrato</label>
+                  <label class="form-control-label">
+                    <b-icon-tag class="icon"/>
+                    Categoria Item Extrato</label>
                   <input type="text" class="form-control" id="pesquisaCategoria" v-model="pesquisaCategoria">
                   <div class="categoria-lista">
-                    <div class="row categoria-lista-item p-2"
+                    <div class="row categoria-lista-item p-1"
                          v-for="(categoria, index) in ((pesquisaCategoria) ? CategoriaLista.filter( i => i.IconTag.includes(pesquisaCategoria.toLowerCase()) || i.CategoriaNome.toLowerCase().includes(pesquisaCategoria.toLowerCase())) : CategoriaLista)"
                          :key="index"
                          @click="CategoriaSel = categoria">
@@ -44,7 +46,7 @@
                                         :color="categoria.IconColor"
                                         :width="30" :height="30"/>
                       </div>
-                      <div class="col-10 p-2" :style="`color: ${categoria.IconColor}`">
+                      <div class="col-10 p-0 pt-1" :style="`color: ${categoria.IconColor}`">
                         {{ categoria.CategoriaNome }}
                       </div>
                     </div>
@@ -64,7 +66,8 @@
                     </div>
                     <div class="col-4">
                       <a class="btn btn-sm btn-fill btn-outline-danger" @click="CategoriaSel = null">
-                        <b-icon-x class="icon"/> Remover
+                        <b-icon-x class="icon"/>
+                        Remover
                       </a>
                     </div>
                   </div>
@@ -149,7 +152,12 @@ export default {
   watch: {
     ExtratoSel() {
       this.pesquisaCategoria = null
-      this.descricaoPersonalizada = this.ExtratoSel.DescricaoPersonalizada;
+      this.descricaoPersonalizada = this.ExtratoSel.DescricaoPersonalizada
+
+      this.timeOut = setTimeout(async () => {
+        document.getElementById('pesquisaCategoria').focus();
+      }, 150)
+
     }
   }
 }
@@ -157,7 +165,8 @@ export default {
 
 <style scoped>
 .categoria-lista {
-  height: 170px;
+  margin-top: 4px;
+  height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid #cccccc;
