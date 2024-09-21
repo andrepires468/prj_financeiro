@@ -3,19 +3,23 @@
 
 namespace App\Services;
 
+use App\Helpers\Functions;
 use App\Helpers\Pagination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Extrato;
+use Illuminate\Support\Facades\DB;
 
 class FinanceiroService extends Service
 {
 
-  public function __construct()
+  protected $processService;
+
+  public function __construct(ProcessService $processService)
   {
     parent::__construct();
+    $this->processService = $processService;
   }
-
 
   public function CalendarioExtrato(Request $request)
   {
@@ -96,6 +100,8 @@ class FinanceiroService extends Service
     if(!$request->IdExtrato)
       throw new \Exception('IdExtrato não passado');
 
+    $categoria_atual = $request->IdCategoria ?? null;
+
     $extrato = Extrato::select()
       ->where('Id', '=', $request->IdExtrato)
       ->first();
@@ -103,12 +109,109 @@ class FinanceiroService extends Service
     if(!$extrato)
       throw new \Exception('Extrato não encontrado');
 
-    $extrato->IdCategoria = $request->IdCategoria ?? null;
+    $categoria_ant = $extrato->IdCategoria;
+
+    $extrato->IdCategoria = $categoria_atual;
     $extrato->DescricaoPersonalizada = $request->DescricaoPersonalizada ?? null;
     $extrato->save();
 
+    //se a categoria esta sendo alterada, refaz o fechamento da categoria anterior e da categoria atual
+    if($categoria_ant != $categoria_atual) {
+
+      $dataExtrato = new \DateTime($extrato->Data);
+      $dataBase = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+
+      if($categoria_ant)
+        $this->processService->procFechamentoCategoria($categoria_ant, $dataBase);
+
+      if($categoria_atual)
+        $this->processService->procFechamentoCategoria($categoria_atual, $dataBase);
+
+    }
 
   }
 
+  public function ChartUltimosMeses(Request $request)
+  {
+
+    $idUsuario = $this->idUsuario;
+    $datasBase = Functions::ultimasDatadaBase(6);
+
+    $reversedDataBase = array_reverse($datasBase);
+
+    $dados = [];
+
+    foreach($reversedDataBase as $data) {
+
+      $result = DB::connection('home')->select("
+        select
+        ? 'DataBase',
+        ? 'CodigoMes',
+        (
+          select
+          coalesce(sum(Extrato.Valor), 0)
+          from Extrato
+          inner join BancoExtrato on BancoExtrato.Id = Extrato.IdBancoExtrato
+          where
+          BancoExtrato.IdUsuario = ?
+          and Extrato.Valor > 0
+          and Extrato.Data between ? and ?
+        ) Entrada,
+        (
+          select
+          coalesce(sum(Extrato.Valor), 0)
+          from Extrato
+          inner join BancoExtrato on BancoExtrato.Id = Extrato.IdBancoExtrato
+          where
+          BancoExtrato.IdUsuario = ?
+          and Extrato.Valor < 0
+          and Extrato.Data between ? and ?
+        ) Saida",
+        [
+          $data['data_inicio_mes'] ,
+          $data['codigo_mes'],
+          $idUsuario,
+          $data['data_inicio_mes'] . ' 00:00:00',
+          $data['data_fim_mes'] . ' 23:59:59',
+          $idUsuario,
+          $data['data_inicio_mes'] . ' 00:00:00',
+          $data['data_fim_mes'] . ' 23:59:59'
+        ]
+      );
+
+      $dados[] = $result[0];
+
+    }
+
+    $result = [];
+    $result['labels'] = [];
+
+    foreach($reversedDataBase as $item) {
+      array_push($result['labels'], Functions::getMesNome($item['codigo_mes']));
+    }
+
+    $result['datasets'][] = [
+      'label' => 'Entrada',
+      'backgroundColor' => '#4da945',
+      'data' => []
+    ];
+
+    $result['datasets'][] = [
+      'label' => 'Saída',
+      'backgroundColor' => '#f87979',
+      'data' => []
+    ];
+
+    foreach($dados as $item){
+      array_push($result['datasets'][0]['data'], (float)$item->Entrada);
+      array_push($result['datasets'][1]['data'], (float)$item->Saida * -1);
+    }
+
+    return $result;
+
+
+
+
+  }
 
 }

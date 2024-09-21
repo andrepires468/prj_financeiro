@@ -19,12 +19,12 @@ class ProcessController extends Controller
   }
 
 
-  public function ImportEstrato(Request $request)
+  public function ImportExtrato(Request $request)
   {
 
     try {
 
-      $result = $this->processService->ImportEstrato($request);
+      $result = $this->processService->ImportExtrato($request);
 
       return ApiResponse::GetSuccessResponse($result, 'Processo Concluído');
 
@@ -55,6 +55,36 @@ class ProcessController extends Controller
     try {
 
       $result = $this->processService->Fechamento($request);
+
+      return ApiResponse::GetSuccessResponse($result, 'Processo Concluído');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, 'bad request', Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
+  public function FechamentoCategoria(Request $request)
+  {
+
+    try {
+
+      $result = $this->processService->FechamentoCategoria($request);
+
+      return ApiResponse::GetSuccessResponse($result, 'Processo Concluído');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, 'bad request', Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
+  public function FechamentoTodasCategorias(Request $request)
+  {
+
+    try {
+
+      $result = $this->processService->FechamentoTodasCategorias($request);
 
       return ApiResponse::GetSuccessResponse($result, 'Processo Concluído');
 

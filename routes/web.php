@@ -38,6 +38,7 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
     $router->get('calendario-extrato', 'FinanceiroController@CalendarioExtrato');
     $router->get('lista-extrato', 'FinanceiroController@ListaExtrato');
     $router->put('update-extrato', 'FinanceiroController@UpdateExtrato');
+    $router->get('chart-ultimos-meses', 'FinanceiroController@ChartUltimosMeses');
   });
 
   $router->group(['prefix' => 'categoria'], function() use ($router) {
@@ -49,9 +50,11 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
   });
 
   $router->group(['prefix' => 'process'], function() use ($router) {
-    $router->post('import-extrato', 'ProcessController@ImportEstrato');
+    $router->post('import-extrato', 'ProcessController@ImportExtrato');
     $router->post('categorizar-extrato', 'ProcessController@CategorizarExtrato');
     $router->post('fechamento', 'ProcessController@Fechamento');
+    $router->post('fechamento-categoria', 'ProcessController@FechamentoCategoria');
+    $router->post('fechamento-todas-categorias', 'ProcessController@FechamentoTodasCategorias');
   });
 
 });

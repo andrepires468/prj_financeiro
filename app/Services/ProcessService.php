@@ -5,8 +5,10 @@ namespace App\Services;
 
 use App\Helpers\Functions;
 use App\Models\BancoExtrato;
+use App\Models\Categoria;
 use App\Models\Extrato;
 use App\Models\Fechamento;
+use App\Models\FechamentoCategoria;
 use Illuminate\Http\Request;
 
 
@@ -18,7 +20,7 @@ class ProcessService extends Service
     parent::__construct();
   }
 
-  public function ImportEstrato(Request $request)
+  public function ImportExtrato(Request $request)
   {
 
     $BancoExtrato = BancoExtrato::select()
@@ -128,6 +130,7 @@ class ProcessService extends Service
   {
 
     $dataHorAtual = $this->date->format('Y-m-d H:i:s');
+    $idUsuario = $this->idUsuario;
 
     // Definindo o mês e ano de início
     $mes_inicio = env('MES_INICIO');
@@ -152,8 +155,13 @@ class ProcessService extends Service
             select
             coalesce(sum(Fechamento.ValorFechado), 0)
             from Fechamento
-            where Fechamento.DataBase = ?
-          )) SaldoFechamento", [$data_base])
+            inner join BancoExtrato on BancoExtrato.Id = Extrato.IdBancoExtrato
+            where
+              BancoExtrato.IdUsuario = ?
+              and Fechamento.DataBase = ?
+          )) SaldoFechamento", [$idUsuario, $data_base])
+        ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
+        ->where('BancoExtrato.IdUsuario', '=', $idUsuario)
         ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
         ->first();
 
@@ -175,6 +183,82 @@ class ProcessService extends Service
       $data_atual = date('Y-m-01', strtotime('+1 month', strtotime($data_atual)));
 
     } // while
+
+  }
+
+  public function FechamentoCategoria(Request $request)
+  {
+
+    if(!$request->idCategoria)
+      throw new \Exception('idCategoria não passado');
+
+    if(!$request->dataBase)
+      throw new \Exception('dataBase não passado');
+
+    $this->procFechamentoCategoria($request->idCategoria, $request->dataBase);
+
+  }
+
+
+  public function FechamentoTodasCategorias(Request $request)
+  {
+
+    if(!$request->dataBase)
+      throw new \Exception('dataBase não passado');
+
+    $dataBase = $request->dataBase;
+
+    $categorias = Categoria::select()->get();
+
+    foreach($categorias as $categoria) {
+      $this->procFechamentoCategoria($categoria->Id, $dataBase);
+    }
+
+
+  }
+
+
+  public function procFechamentoCategoria($idCategoria, $dataBase)
+  {
+
+    $dataHorAtual = $this->date->format('Y-m-d H:i:s');
+    $idUsuario = $this->idUsuario;
+
+    $date = new \DateTime($dataBase);
+    $data_inicio_mes = $date->modify('first day of this month')->format('Y-m-d');
+
+    $date = new \DateTime($dataBase); // Reinicializando a data
+    $data_fim_mes = $date->modify('last day of this month')->format('Y-m-d');
+
+    $fechamento_categoria = Extrato::selectRaw("coalesce(sum(Extrato.Valor), 0) TotalCategoria")
+      ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
+      ->where('BancoExtrato.IdUsuario', '=', $idUsuario)
+      ->where('Extrato.IdCategoria', '=', $idCategoria)
+      ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->first();
+
+    $totalCategoria = 0;
+
+    if(isset($fechamento_categoria->TotalCategoria))
+      $totalCategoria = (float)$fechamento_categoria->TotalCategoria;
+
+//    if($totalCategoria < 0)
+//      $totalCategoria = $totalCategoria *-1;
+
+    $fechamentoCategoria = FechamentoCategoria::select()
+      ->where('IdCategoria', '=', $idCategoria)
+      ->where('DataBase', '=', $dataBase)
+      ->first();
+
+    if(!$fechamentoCategoria) {
+      $fechamentoCategoria = new FechamentoCategoria();
+      $fechamentoCategoria->IdCategoria = $idCategoria;
+      $fechamentoCategoria->DataBase = $dataBase;
+    }
+
+    $fechamentoCategoria->ValorFechado = $totalCategoria;
+    $fechamentoCategoria->AlteradoEm = $dataHorAtual;
+    $fechamentoCategoria->save();
 
   }
 

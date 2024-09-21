@@ -63,5 +63,20 @@ class FinanceiroController extends Controller
   }
 
 
+  public function ChartUltimosMeses(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ChartUltimosMeses($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
 
 }

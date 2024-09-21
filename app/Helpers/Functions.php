@@ -137,4 +137,66 @@ class Functions
     return $tokens;
   }
 
+  public static function ultimasDatadaBase(int $qtdMeses)
+  {
+
+    $dates = [];
+
+    // Data atual
+    $currentDate = new \DateTime();
+
+    // Itera pelos últimos 6 meses
+    for($i = 0 ; $i < $qtdMeses ; $i++) {
+
+      $currentDate = (new \DateTime())->modify("-$i month");
+
+      $codigo_mes = (int)$currentDate->format('m');
+      $data_inicio_mes = $currentDate->format('Y-m-01');
+      $data_fim_mes = $currentDate->modify('last day of this month')->format('Y-m-d');
+
+      $dates[] = [
+        "codigo_mes" => $codigo_mes,
+        "data_inicio_mes" => $data_inicio_mes,
+        "data_fim_mes" => $data_fim_mes
+      ];
+
+
+    }
+
+    return $dates;
+
+
+  }
+
+
+  public static function getMesNome($monthId, $short = false)
+  {
+    // Definir o array de meses
+    $months = [
+      ['Id' => 1, 'Nome' => 'Janeiro', 'NomeCurto' => 'Jan'],
+      ['Id' => 2, 'Nome' => 'Fevereiro', 'NomeCurto' => 'Fev'],
+      ['Id' => 3, 'Nome' => 'Março', 'NomeCurto' => 'Mar'],
+      ['Id' => 4, 'Nome' => 'Abril', 'NomeCurto' => 'Abr'],
+      ['Id' => 5, 'Nome' => 'Maio', 'NomeCurto' => 'Mai'],
+      ['Id' => 6, 'Nome' => 'Junho', 'NomeCurto' => 'Jun'],
+      ['Id' => 7, 'Nome' => 'Julho', 'NomeCurto' => 'Jul'],
+      ['Id' => 8, 'Nome' => 'Agosto', 'NomeCurto' => 'Ago'],
+      ['Id' => 9, 'Nome' => 'Setembro', 'NomeCurto' => 'Set'],
+      ['Id' => 10, 'Nome' => 'Outubro', 'NomeCurto' => 'Out'],
+      ['Id' => 11, 'Nome' => 'Novembro', 'NomeCurto' => 'Nov'],
+      ['Id' => 12, 'Nome' => 'Dezembro', 'NomeCurto' => 'Dez'],
+    ];
+
+    // Percorrer os meses e encontrar o que corresponde ao Id
+    foreach($months as $month) {
+      if($month['Id'] === $monthId) {
+        return $short ? $month['NomeCurto'] : $month['Nome'];
+      }
+    }
+
+    // Retornar null se o Id não for encontrado
+    return null;
+  }
+
+
 }
