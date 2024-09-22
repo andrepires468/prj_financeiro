@@ -4,15 +4,12 @@
       :ExtratoSel="ExtratoSel"
       :CategoriaLista="CategoriaLista"
       :CategoriaSel="CategoriaSel"
+      @updateExtrato="updateExtrato()"
   />
 
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-5 pb-2 mb-3 border-bottom">
     <h1>Financeiro</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-
-      <!--      <button type="button" class="btn btn-sm btn-outline-secondary" @click="categorizarExtrato">-->
-      <!--        Categorizar-->
-      <!--      </button>-->
 
       <div class="me-2" style="min-width: 180px">
         <MultselectForm
@@ -54,19 +51,62 @@
 
       <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
         <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-success">Design</strong>
-          <h3 class="mb-0">Post title</h3>
-          <div class="mb-1 text-muted">Nov 11</div>
+          <strong class="d-inline-block mb-2 text-success">Categorias Mês</strong>
+          <Bar
+              v-if="ChartCategoriasMes"
+              id="chart-categorias-mes"
+              :options="chartBarraInvertidaOptions"
+              :data="ChartCategoriasMes"
+          />
+          <div v-else class="text-align-center p-4">Carregando...</div>
+        </div>
+        <div class="col-auto d-none d-lg-block">
+        </div>
+      </div>
+
+      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <div class="col p-4 d-flex flex-column position-static">
+          <strong class="d-inline-block mb-2 text-success">
+            Comparativo Categoria (últimos {{ QtdMeses_ChartCategoria }} meses)
+          </strong>
+
+          <div class="me-2">
+            <MultselectForm
+                :options="CategoriaLista"
+                v-model="CategoriaFiltroSel"
+                :internalSearch="true"
+                :searchable="true"
+                label="CategoriaNome"
+                placeholder=""
+            />
+          </div>
 
           <Bar
+              v-if="ChartCategoriaUltimosMeses"
+              id="chart-categoria-ultimos-meses"
+              :options="chartBarraOptions"
+              :data="ChartCategoriaUltimosMeses"
+          />
+          <div v-else class="text-align-center p-4">
+            {{ CategoriaFiltroSel ? 'Carregando...' : 'Selecione uma Categoria' }}
+          </div>
+        </div>
+        <div class="col-auto d-none d-lg-block">
+        </div>
+      </div>
+
+      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <div class="col p-4 d-flex flex-column position-static">
+          <strong class="d-inline-block mb-2 text-success">
+            Entras x Saídas (últimos {{ QtdMeses_ChartEntradaSaida }} meses)
+          </strong>
+          <Bar
               v-if="ChartUltimosMeses"
-              id="my-chart-id"
-              :options="chartOptions"
+              id="chart-ultimos-meses"
+              :options="chartBarraOptions"
               :data="ChartUltimosMeses"
           />
-
-
-          <a href="#" class="stretched-link">Continue reading</a>
+          <div v-else class="text-align-center p-4">Carregando...</div>
         </div>
         <div class="col-auto d-none d-lg-block">
         </div>
@@ -75,14 +115,21 @@
     </div>
     <div class="col-md-6">
 
-
-      <div class="alert alert-warning" v-if="Extrato.filter( i => !i.IdCategoria).length > 0">
+      <div class="alert alert-warning text-align-center" v-if="Extrato.filter( i => !i.IdCategoria).length > 0">
         Restam {{ Extrato.filter(i => !i.IdCategoria).length }} item(s) para classificar
       </div>
 
+      <input type="text" class="form-control" id="pesquisaCategoria"
+             v-model="pesquisaExtrato"
+             placeholder="Filtrar extrato">
+
       <table class="table-financeiro">
         <tbody>
-        <tr v-for="(item, index) in Extrato" :key="index"
+        <tr
+            v-for="(item, index) in ((pesquisaExtrato) ? Extrato.filter(i =>
+                normalizarTexto(i.CategoriaNome + ' ' + i.Descricao).includes(normalizarTexto(pesquisaExtrato)) )
+                : Extrato)"
+            :key="index"
             data-bs-toggle="modal"
             data-bs-target="#modalExtrato"
             @click="abrirModalExtrato(item, index)">
@@ -147,40 +194,49 @@ export default {
       Extrato: [],
       ExtratoSel: null,
       ExtratoSelIndex: null,
+      pesquisaExtrato: null,
 
       CategoriaLista: [],
       CategoriaSel: null,
+      CategoriaFiltroSel: null,
 
-      chartData: {
-        labels: ['Janeiro', 'Fevereiro', 'Março'],
-        datasets: [
-          {
-            label: 'Entrada',
-            backgroundColor: '#4da945',
-            data: [1820.10, 1633.35, 992.98]
-          },
-          {
-            label: 'Saída',
-            backgroundColor: '#f87979',
-            data: [1820.10, 1633.35, 992.98]
+      chartBarraInvertidaOptions: {
+        indexAxis: 'y', // Define o eixo de categorias como Y (para barras horizontais)
+        plugins: {
+          datalabels: {
+            formatter: function (value) {
+              return 'R$' + value.toFixed(2).replace('.', ',');
+            },
+            color: '#000',
+            anchor: 'end',
+            align: 'right'
           }
-        ]
+        },
+        scales: {
+          x: {
+            display: false,
+            ticks: {
+              callback: function (value) {
+                return 'R$' + value.toFixed(2).replace('.', ',');
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+          }
+        }
       },
-      chartOptions: {
+      chartBarraOptions: {
         responsive: true,
         scales: {
           y: {
-            ticks: {
-              callback: function (value) {
-                return 'R$ ' + value.toFixed(2).replace('.', ',');
-              }
-            }
+            display: false,
           }
         },
         plugins: {
           datalabels: {
-            formatter: function(value) {
-              return value.toFixed(0).replace('.', ',');
+            formatter: function (value) {
+              return 'R$' + value.toFixed(2).replace('.', ',');
             },
             color: '#5a5a5a', // Cor dos rótulos
             anchor: 'end',
@@ -189,8 +245,11 @@ export default {
         },
       },
 
+      ChartCategoriasMes: null,
+      QtdMeses_ChartCategoria: 6,
+      ChartCategoriaUltimosMeses: null,
+      QtdMeses_ChartEntradaSaida: 4,
       ChartUltimosMeses: null,
-
     }
   },
   async mounted() {
@@ -231,25 +290,18 @@ export default {
 
       swalLoading.close()
 
-      await this.chartUltimosMeses();
+      this.getChartCategoriasMes();
+      this.getChartUltimosMeses();
+      this.getChartCategoriaUltimosMeses();
 
     } catch (e) {
       Helper.messageExceptionHandler(e)
     }
   },
   methods: {
-    // async categorizarExtrato(){
-    //
-    //   const data = {
-    //     mes: this.CalendarioSel.Mes,
-    //     ano: this.CalendarioSel.Ano
-    //   }
-    //
-    //   const result = await processService.categorizarExtrato(data)
-    //   if (!result.Success)
-    //     throw new Error(Helper.getMessageError(result))
-    //
-    // },
+    normalizarTexto(texto) {
+      return Helper.normalizarTexto(texto);
+    },
     async categoriaLista() {
 
       try {
@@ -261,9 +313,13 @@ export default {
         this.CategoriaLista = result.Data.map(i => {
           return {
             ...i,
+            Id: parseInt(i.Id),
             IconSVG: categoriaIconsModel.find(j => j.IconTag == i.IconTag).IconSVG
           }
         })
+
+        if (this.CategoriaLista)
+          this.CategoriaFiltroSel = this.CategoriaLista.find(i => i.Id == 1);
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
@@ -283,9 +339,14 @@ export default {
 
         swalLoading.fire('', 'Carregando Extrato, aguarde...')
 
+        this.pesquisaExtrato = null
+
         await this.getExtrato();
 
         swalLoading.close()
+
+        this.getChartCategoriasMes();
+        this.getChartCategoriaUltimosMeses();
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
@@ -305,6 +366,12 @@ export default {
           DataDisplay: dia + '/' + this.CalendarioSel.NomeCurto
         }
       });
+
+    },
+    async updateExtrato() {
+
+      this.getChartCategoriasMes();
+      this.getChartCategoriaUltimosMeses();
 
     },
     async getExtrato() {
@@ -358,18 +425,62 @@ export default {
 
         this.isSync = false;
 
+        this.getChartCategoriasMes();
+        this.getChartUltimosMeses();
+
       } catch (e) {
         Helper.messageExceptionHandler(e)
       }
 
     },
-    async chartUltimosMeses() {
+    async getChartCategoriasMes(qtdMeses) {
+
+      const dataBase = this.CalendarioSel.Ano + '-' + this.CalendarioSel.Mes.toString().padStart(2, '0') + '-01'
+
+      try {
+
+        this.ChartCategoriasMes = null
+
+        const result = await financeiroService.ChartCategoriasMes(dataBase)
+        if (!result.Success)
+          throw new Error(Helper.getMessageError(result))
+
+        this.ChartCategoriasMes = result.Data
+
+      } catch (e) {
+        Helper.messageExceptionHandler(e)
+      }
+
+    },
+    async getChartCategoriaUltimosMeses() {
+
+
+      try {
+
+        this.ChartCategoriaUltimosMeses = null
+
+        if (this.CategoriaFiltroSel?.Id) {
+
+          const result = await financeiroService.ChartCategoriaUltimosMeses(this.CategoriaFiltroSel?.Id, this.QtdMeses_ChartCategoria)
+          if (!result.Success)
+            throw new Error(Helper.getMessageError(result))
+
+          this.ChartCategoriaUltimosMeses = result.Data
+
+        }
+
+      } catch (e) {
+        Helper.messageExceptionHandler(e)
+      }
+
+    },
+    async getChartUltimosMeses() {
 
       try {
 
         this.ChartUltimosMeses = null
 
-        const result = await financeiroService.chartUltimosMeses()
+        const result = await financeiroService.chartUltimosMeses(this.QtdMeses_ChartEntradaSaida)
         if (!result.Success)
           throw new Error(Helper.getMessageError(result))
 
@@ -382,6 +493,11 @@ export default {
 
     }
   },
+  watch: {
+    async CategoriaFiltroSel(value) {
+      this.getChartCategoriaUltimosMeses()
+    }
+  }
 }
 </script>
 

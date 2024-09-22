@@ -225,8 +225,11 @@ export default {
     });
 
   },
-  formatCurrency(valor){
+  formatCurrency(valor) {
     return 'R$ ' + parseFloat(valor).toFixed(2).toString().replaceAll('.', ',')
+  },
+  normalizarTexto(texto) {
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
   }
 
 }

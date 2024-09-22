@@ -106,6 +106,7 @@ import IconeCategoria from '../../components/IconeCategoria'
 export default {
   name: "ModalExtrato",
   components: {IconeCategoria},
+  emits:['updateExtrato'],
   props: {
     ExtratoSel: null,
     CategoriaLista: null,
@@ -141,6 +142,8 @@ export default {
         this.ExtratoSel.IconColor = this.CategoriaSel?.IconColor ?? null
 
         swalToast.fire('', 'extrato atualizado', 'success')
+
+        this.$emit('updateExtrato');
 
       } catch (e) {
         swalToast.fire('', 'erro ao atualizar extrato', 'error')

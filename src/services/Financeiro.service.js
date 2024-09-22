@@ -78,9 +78,65 @@ export default {
       }
     }
   },
-  async chartUltimosMeses() {
+  async ChartCategoriaUltimosMeses(idCategoria, qtdMeses) {
+
+    const params = [
+      {
+        Name: 'idCategoria',
+        Value: idCategoria
+      },
+      {
+        Name: 'qtdMeses',
+        Value: qtdMeses
+      }
+    ]
+
     try {
-      const url = `${endpoints.financeiro}/chart-ultimos-meses`;
+      const url = `${endpoints.financeiro}/chart-categoria-ultimos-meses${Helper.getURLParams(params)}`;
+      const result = await api.get(url)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
+  async ChartCategoriasMes(dataBase) {
+
+    const params = [
+      {
+        Name: 'dataBase',
+        Value: dataBase
+      },
+    ]
+
+    try {
+      const url = `${endpoints.financeiro}/chart-categorias-mes${Helper.getURLParams(params)}`;
+      const result = await api.get(url)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
+  async chartUltimosMeses(qtdMeses) {
+
+    const params = [
+      {
+        Name: 'qtdMeses',
+        Value: qtdMeses
+      }
+    ]
+
+    try {
+      const url = `${endpoints.financeiro}/chart-ultimos-meses${Helper.getURLParams(params)}`;
       const result = await api.get(url)
       return Helper.getServiceResponse(result)
     } catch (e) {
