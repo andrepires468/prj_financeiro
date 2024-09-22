@@ -62,6 +62,34 @@ class FinanceiroController extends Controller
 
   }
 
+  public function ChartCategoriasMes(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ChartCategoriasMes($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+  public function ChartCategoriaUltimosMeses(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ChartCategoriaUltimosMeses($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
 
   public function ChartUltimosMeses(Request $request)
   {

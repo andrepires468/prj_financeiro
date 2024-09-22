@@ -23,6 +23,7 @@ class ProcessService extends Service
   public function ImportExtrato(Request $request)
   {
 
+    // TODO alterar paga pegar o idBancoExtrato da sessão do usuairo: $this->idBancoExtrato
     $BancoExtrato = BancoExtrato::select()
       ->where('IdUsuario', '=', $this->idUsuario)
       ->where('BancoNome', '=', 'Nubank')
@@ -131,6 +132,7 @@ class ProcessService extends Service
 
     $dataHorAtual = $this->date->format('Y-m-d H:i:s');
     $idUsuario = $this->idUsuario;
+    $idBancoExtrato = $this->idBancoExtrato;
 
     // Definindo o mês e ano de início
     $mes_inicio = env('MES_INICIO');
@@ -160,8 +162,7 @@ class ProcessService extends Service
               BancoExtrato.IdUsuario = ?
               and Fechamento.DataBase = ?
           )) SaldoFechamento", [$idUsuario, $data_base])
-        ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
-        ->where('BancoExtrato.IdUsuario', '=', $idUsuario)
+        ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
         ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
         ->first();
 
@@ -173,6 +174,7 @@ class ProcessService extends Service
 
       if(!$fechamento) {
         $fechamento = new Fechamento();
+        $fechamento->IdBancoExtrato = $idBancoExtrato;
         $fechamento->DataBase = $data_inicio_mes;
       }
 
@@ -221,8 +223,9 @@ class ProcessService extends Service
   public function procFechamentoCategoria($idCategoria, $dataBase)
   {
 
-    $dataHorAtual = $this->date->format('Y-m-d H:i:s');
     $idUsuario = $this->idUsuario;
+    $idBancoExtrato = $this->idBancoExtrato;
+    $dataHorAtual = $this->date->format('Y-m-d H:i:s');
 
     $date = new \DateTime($dataBase);
     $data_inicio_mes = $date->modify('first day of this month')->format('Y-m-d');
@@ -231,8 +234,7 @@ class ProcessService extends Service
     $data_fim_mes = $date->modify('last day of this month')->format('Y-m-d');
 
     $fechamento_categoria = Extrato::selectRaw("coalesce(sum(Extrato.Valor), 0) TotalCategoria")
-      ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
-      ->where('BancoExtrato.IdUsuario', '=', $idUsuario)
+      ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->where('Extrato.IdCategoria', '=', $idCategoria)
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
       ->first();
@@ -252,6 +254,7 @@ class ProcessService extends Service
 
     if(!$fechamentoCategoria) {
       $fechamentoCategoria = new FechamentoCategoria();
+      $fechamentoCategoria->IdBancoExtrato = $idBancoExtrato;
       $fechamentoCategoria->IdCategoria = $idCategoria;
       $fechamentoCategoria->DataBase = $dataBase;
     }

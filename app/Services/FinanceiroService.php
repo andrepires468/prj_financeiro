@@ -5,9 +5,11 @@ namespace App\Services;
 
 use App\Helpers\Functions;
 use App\Helpers\Pagination;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Extrato;
+use App\Models\FechamentoCategoria;
 use Illuminate\Support\Facades\DB;
 
 class FinanceiroService extends Service
@@ -81,7 +83,7 @@ class FinanceiroService extends Service
       ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
       ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
-      ->where('BancoExtrato.IdUsuario', '=', $this->idUsuario)
+      ->where('Extrato.IdBancoExtrato', '=', $this->idBancoExtrato)
       ->orderByDesc('Extrato.Data');
 
     if($request->page && $request->pageSize) {
@@ -131,12 +133,130 @@ class FinanceiroService extends Service
 
   }
 
+  public function ChartCategoriasMes(Request $request)
+  {
+
+    if(!$request->dataBase)
+      throw new \Exception('$dataBase não passado');
+
+    $dataBase = $request->dataBase;
+
+    $date = new \DateTime($dataBase);
+    $codigo_mes = (int)$date->format('m');
+
+    $idBancoExtrato = $this->idBancoExtrato;
+
+
+    $dados = FechamentoCategoria::selectRaw("
+      Categoria.CategoriaNome,
+      Categoria.IconColor,
+      coalesce(FechamentoCategoria.ValorFechado, 0)  ValorCategoria")
+      ->join('Categoria', 'Categoria.Id', '=', 'FechamentoCategoria.IdCategoria')
+      ->where('FechamentoCategoria.IdBancoExtrato', '=', $idBancoExtrato)
+      ->where('FechamentoCategoria.DataBase', '=', $dataBase)
+      ->where('FechamentoCategoria.ValorFechado', '<', 0)
+      ->orderBy('Categoria.CategoriaNome')
+      ->get();
+
+
+    $result = [];
+    $result['labels'] =[];
+    $result['datasets'][] = [
+      'label' => 'Values',
+      'backgroundColor' => [],
+      'data' => []
+    ];
+
+    foreach($dados as $item) {
+
+      array_push($result['labels'], $item->CategoriaNome);
+
+      array_push($result['datasets'][0]['backgroundColor'], $item->IconColor);
+
+      array_push($result['datasets'][0]['data'], ((float)$item->ValorCategoria < 0) ? (float)$item->ValorCategoria * -1 :(float) $item->ValorCategoria);
+
+    }
+
+    return $result;
+
+  }
+
+
+  public function ChartCategoriaUltimosMeses(Request $request)
+  {
+
+    if(!$request->qtdMeses)
+      throw new \Exception('qtdMeses não passado');
+
+    if(!$request->idCategoria)
+      throw new \Exception('qtdMeses não passado');
+
+
+    $idUsuario = $this->idUsuario;
+    $idBancoExtrato = $this->idBancoExtrato;
+    $idCategoria = $request->idCategoria;
+
+    $categoria = Categoria::where('Id', '=', $idCategoria)->first();
+    if(!$categoria)
+      throw new \Exception('Categoria não encontrada');
+
+
+    $datasBase = Functions::ultimasDatadaBase($request->qtdMeses);
+
+    // inverte a lista de datas
+    $reversedDataBase = array_reverse($datasBase);
+
+    $dados = [];
+
+    foreach($reversedDataBase as $data) {
+
+      $fechamento = FechamentoCategoria::selectRaw("
+        ? 'DataBase',
+        ? 'CodigoMes',
+        coalesce(FechamentoCategoria.ValorFechado, 0) ValorCategoria",
+        [$data['data_inicio_mes'], $data['codigo_mes']])
+        ->where('FechamentoCategoria.IdBancoExtrato', '=', $idBancoExtrato)
+        ->where('FechamentoCategoria.IdCategoria', '=', $idCategoria)
+        ->where('FechamentoCategoria.DataBase', '=', $data['data_inicio_mes'])
+        ->first();
+
+      $dados[] = $fechamento;
+
+    }
+
+    $result = [];
+    $result['labels'] = [];
+
+    foreach($reversedDataBase as $item) {
+      array_push($result['labels'], Functions::getMesNome($item['codigo_mes']));
+    }
+
+    $result['datasets'][] = [
+      'label' => $categoria->CategoriaNome,
+      'backgroundColor' => $categoria->IconColor,
+      'data' => []
+    ];
+
+    foreach($dados as $item) {
+      array_push($result['datasets'][0]['data'], (float)$item->ValorCategoria * -1);
+    }
+
+    return $result;
+
+  }
+
+
   public function ChartUltimosMeses(Request $request)
   {
 
-    $idUsuario = $this->idUsuario;
-    $datasBase = Functions::ultimasDatadaBase(6);
+    if(!$request->qtdMeses)
+      throw new \Exception('qtdMeses não passado');
 
+    $idUsuario = $this->idUsuario;
+    $idBancoExtrato = $this->idBancoExtrato;
+    $datasBase = Functions::ultimasDatadaBase($request->qtdMeses);
+
+    // inverte a lista de datas
     $reversedDataBase = array_reverse($datasBase);
 
     $dados = [];
@@ -151,9 +271,8 @@ class FinanceiroService extends Service
           select
           coalesce(sum(Extrato.Valor), 0)
           from Extrato
-          inner join BancoExtrato on BancoExtrato.Id = Extrato.IdBancoExtrato
           where
-          BancoExtrato.IdUsuario = ?
+          Extrato.IdBancoExtrato = ?
           and Extrato.Valor > 0
           and Extrato.Data between ? and ?
         ) Entrada,
@@ -161,19 +280,18 @@ class FinanceiroService extends Service
           select
           coalesce(sum(Extrato.Valor), 0)
           from Extrato
-          inner join BancoExtrato on BancoExtrato.Id = Extrato.IdBancoExtrato
           where
-          BancoExtrato.IdUsuario = ?
+          Extrato.IdBancoExtrato = ?
           and Extrato.Valor < 0
           and Extrato.Data between ? and ?
         ) Saida",
         [
-          $data['data_inicio_mes'] ,
+          $data['data_inicio_mes'],
           $data['codigo_mes'],
-          $idUsuario,
+          $idBancoExtrato,
           $data['data_inicio_mes'] . ' 00:00:00',
           $data['data_fim_mes'] . ' 23:59:59',
-          $idUsuario,
+          $idBancoExtrato,
           $data['data_inicio_mes'] . ' 00:00:00',
           $data['data_fim_mes'] . ' 23:59:59'
         ]
@@ -202,15 +320,12 @@ class FinanceiroService extends Service
       'data' => []
     ];
 
-    foreach($dados as $item){
+    foreach($dados as $item) {
       array_push($result['datasets'][0]['data'], (float)$item->Entrada);
       array_push($result['datasets'][1]['data'], (float)$item->Saida * -1);
     }
 
     return $result;
-
-
-
 
   }
 

@@ -28,6 +28,7 @@ class Service
 
     if($usuarioLogado = AuthService::getUsuario()) {
       $this->idUsuario = $usuarioLogado->IdUsuario;
+      $this->idBancoExtrato = $usuarioLogado->IdBancoExtrato;
       $this->usuarioEmail = $usuarioLogado->Email;
       $this->usuarioNome = $usuarioLogado->Nome;
 

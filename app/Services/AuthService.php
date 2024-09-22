@@ -4,6 +4,7 @@
 namespace App\Services;
 
 use App\Helpers\Bcrypt;
+use App\Models\BancoExtrato;
 use App\Models\Usuario;
 use DateTime;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class AuthService extends Service
     return [
       'Usuario' => [
         'IdUsuario' => $usuario->Id ?? $usuario->IdUsuario,
+        'IdBancoExtrato' => $usuario->IdBancoExtrato,
         'Email' => $usuario->Email,
         'Nome' => $usuario->Nome,
       ],
@@ -99,13 +101,19 @@ class AuthService extends Service
     if($validator->fails())
       throw new \Exception("Entre com o usuário e senha");
 
-    $usuario = Usuario::where("Usuario.Email", "=", $email)->first();
+    $usuario = Usuario::selectRaw('Usuario.*, BancoExtrato.Id IdBancoExtrato')
+      ->leftJoin('BancoExtrato', 'BancoExtrato.IdUsuario', '=', 'Usuario.Id')
+      ->where("Usuario.Email", "=", $email)
+      ->first();
 
     if(empty($usuario))
       throw new \Exception('Usuário ou senha inválidos');
 
     if(!Bcrypt::check($password, $usuario->Password))
       throw new \Exception('Usuário ou senha inválidos');
+
+    if(empty($usuario->IdBancoExtrato))
+      throw new \Exception('Banco do usuário não encontrado');
 
     return $this->getUserToken($usuario);
 
