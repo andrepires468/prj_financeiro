@@ -10,6 +10,7 @@ use App\Models\Extrato;
 use App\Models\Fechamento;
 use App\Models\FechamentoCategoria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
 
 class ProcessService extends Service
@@ -23,10 +24,8 @@ class ProcessService extends Service
   public function ImportExtrato(Request $request)
   {
 
-    // TODO alterar paga pegar o idBancoExtrato da sessão do usuairo: $this->idBancoExtrato
     $BancoExtrato = BancoExtrato::select()
-      ->where('IdUsuario', '=', $this->idUsuario)
-      ->where('BancoNome', '=', 'Nubank')
+      ->where('Id', '=', $this->idBancoExtrato)
       ->first();
 
     if(!$BancoExtrato)
@@ -40,8 +39,11 @@ class ProcessService extends Service
 
     $idBancoExtrato = $BancoExtrato->Id;
 
-    $user = utf8_encode(env($BancoExtrato->GmailUser));
-    $pass = utf8_encode(str_replace('_', ' ', env($BancoExtrato->GmailPass)));
+//    $user_ = Crypt::encrypt($BancoExtrato->GmailUser);
+//    $pass_ = Crypt::encrypt($BancoExtrato->GmailPass);
+
+    $user = utf8_encode(Crypt::decrypt($BancoExtrato->GmailUser));
+    $pass = utf8_encode(str_replace('_', ' ', Crypt::decrypt($BancoExtrato->GmailPass)));
 
     $listados = 0;
     $incluidos = 0;
