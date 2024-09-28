@@ -72,6 +72,7 @@ import authService from '@/services/Auth.service'
 import userService from '../../helpers/user.service'
 import Helper from "@/helpers/helper.service"
 import moment from "moment"
+import {router} from "@/router";
 
 export default {
   name: "SystemLayout",
@@ -108,7 +109,7 @@ export default {
         if (!result.Success)
           throw new Error(Helper.getMessageError(result))
 
-        this.$router.push('/Login')
+        router.push('/login');
         swalLoading.close()
 
       } catch (e) {
