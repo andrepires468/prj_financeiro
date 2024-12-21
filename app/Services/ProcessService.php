@@ -116,7 +116,7 @@ class ProcessService extends Service
 
       } // foreach emails
 
-      if($incluidos > 0)
+//      if($incluidos > 0)
         $this->Fechamento();
 
     } // if emails
@@ -153,17 +153,16 @@ class ProcessService extends Service
       $data_fim_mes = date('Y-m-t', strtotime("last day of", strtotime($data_atual)));
 
       $fechamento_atual = Extrato::selectRaw("
-          (coalesce(sum(Extrato.Valor), 0)  +
-          (
-            -- fechamentos anteriores
-            select
-            coalesce(sum(Fechamento.ValorFechado), 0)
-            from Fechamento
-            inner join BancoExtrato on BancoExtrato.Id = Extrato.IdBancoExtrato
-            where
+        coalesce(sum(Extrato.Valor), 0) + (
+          -- Fechamentos anteriores
+          select
+              coalesce(sum(Fechamento.ValorFechado), 0)
+          from Fechamento
+          inner join BancoExtrato on BancoExtrato.Id = Fechamento.IdBancoExtrato
+          where
               BancoExtrato.IdUsuario = ?
               and Fechamento.DataBase = ?
-          )) SaldoFechamento", [$idUsuario, $data_base])
+        ) as SaldoFechamento", [$idUsuario, $data_base])
         ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
         ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
         ->first();

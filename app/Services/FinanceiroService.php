@@ -238,7 +238,8 @@ class FinanceiroService extends Service
     ];
 
     foreach($dados as $item) {
-      array_push($result['datasets'][0]['data'], (float)$item->ValorCategoria * -1);
+      $valorCategoria = isset($item->ValorCategoria) ? (float)$item->ValorCategoria : 0;
+      array_push($result['datasets'][0]['data'], $valorCategoria * -1);
     }
 
     return $result;

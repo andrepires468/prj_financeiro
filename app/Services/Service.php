@@ -36,4 +36,35 @@ class Service
 
   }
 
+  protected function countModel($model): int
+  {
+
+    $query = $model->toSql();
+    $bindings = $model->getBindings();
+
+    $fullQuery = vsprintf(str_replace('?', '%s', $query), array_map(function($value) {
+      return is_numeric($value) ? $value : "'" . addslashes($value) . "'";
+    }, $bindings));
+
+    $result = DB::connection('lms')->select("select count(*) total from ({$fullQuery}) sub");
+
+    if(isset($result[0]))
+      return (int)$result[0]->total;
+
+    return 0;
+
+  }
+
+  protected function debugModel($model) : string
+  {
+
+    $query = $model->toSql();
+    $bindings = $model->getBindings();
+
+    return vsprintf(str_replace('?', '%s', $query), array_map(function($value) {
+      return is_numeric($value) ? $value : "'" . addslashes($value) . "'";
+    }, $bindings));
+
+  }
+
 }
