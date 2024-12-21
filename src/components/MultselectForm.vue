@@ -70,4 +70,20 @@ export default {
 
 
 
+.btn-group .multiselect,
+.btn-group .multiselect * {
+  border-radius: 0px !important;
+}
+
+
+.btn-group .multiselect__tags{
+  border-radius: 0px !important;
+  border-right: none;
+  border-left: none;
+  border-top: 1px solid !important;
+  border-bottom: 1px solid !important;
+  border-color: var(--bs-btn-border-color) !important;
+}
+
+
 </style>

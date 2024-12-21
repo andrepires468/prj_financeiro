@@ -9,20 +9,26 @@
 
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-5 pb-2 mb-3 border-bottom">
     <h1>Financeiro</h1>
+
     <div class="btn-toolbar mb-2 mb-md-0">
 
-      <div class="me-2" style="min-width: 180px">
-        <MultselectForm
-            :options="CalendarioLista"
-            v-model="CalendarioSel"
-            :internalSearch="true"
-            :searchable="true"
-            label="Nome"
-            placeholder=""
-        />
-      </div>
-
       <div class="btn-group me-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('next')">
+          <b-icon-chevron-compact-left class="icon"/>
+        </button>
+        <div class="" style="min-width: 210px">
+          <MultselectForm
+              :options="CalendarioLista"
+              v-model="CalendarioSel"
+              :internalSearch="true"
+              :searchable="true"
+              label="Nome"
+              placeholder=""
+          />
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('previous')">
+          <b-icon-chevron-compact-right class="icon"/>
+        </button>
         <button type="button" class="btn btn-sm btn-outline-secondary" @click="aplicarFiltroExtrato">
           <b-icon-search class="icon"/>
           Aplicar
@@ -87,6 +93,11 @@
               :options="chartBarraOptions"
               :data="ChartCategoriaUltimosMeses"
           />
+
+          <div v-if="CategoriaUltimosMesesMedia" class="text-align-center mt-2 text-sm">
+            média de <b>{{CategoriaUltimosMesesMedia}}</b> dos últimos {{ChartCategoriaUltimosMeses?.labels?.length}} mêses
+          </div>
+
           <div v-else class="text-align-center p-4">
             {{ CategoriaFiltroSel ? 'Carregando...' : 'Selecione uma Categoria' }}
           </div>
@@ -248,6 +259,7 @@ export default {
       ChartCategoriasMes: null,
       QtdMeses_ChartCategoria: 6,
       ChartCategoriaUltimosMeses: null,
+      CategoriaUltimosMesesMedia: null,
       QtdMeses_ChartEntradaSaida: 4,
       ChartUltimosMeses: null,
     }
@@ -331,6 +343,51 @@ export default {
       this.ExtratoSel = item
       this.ExtratoSelIndex = index
       this.CategoriaSel = this.CategoriaLista.find(i => i.Id == item.IdCategoria) ?? null
+
+    },
+    findAdjacentId(list, currentId, direction) {
+
+      // Encontrar o índice do item atual
+      const currentIndex = list.findIndex(item => item.Id === currentId);
+
+      if (currentIndex === -1) {
+        throw new Error('ID atual não encontrado na lista.');
+      }
+
+      // Determinar o índice do próximo ou anterior
+      let newIndex;
+      if (direction === 'next') {
+        newIndex = currentIndex + 1;
+      } else if (direction === 'previous') {
+        newIndex = currentIndex - 1;
+      } else {
+        throw new Error('Direção inválida. Use "next" ou "previous".');
+      }
+
+      // Retornar o ID do próximo ou anterior, se existir
+      return list[newIndex] ? list[newIndex] : null;
+
+    },
+    async navegarFiltro(nav) {
+
+      try {
+
+        if (this.CalendarioSel) {
+
+          // console.log(this.CalendarioLista)
+          // console.log(this.CalendarioSel)
+
+          if (!['next', 'previous'].includes(nav))
+            return
+
+          const novo = this.findAdjacentId(this.CalendarioLista, this.CalendarioSel.Id, nav)
+          if(novo) this.CalendarioSel = novo
+
+        }
+
+      } catch (e) {
+        console.error(e);
+      }
 
     },
     async aplicarFiltroExtrato() {
@@ -467,6 +524,12 @@ export default {
 
           this.ChartCategoriaUltimosMeses = result.Data
 
+          const valores = this.ChartCategoriaUltimosMeses.datasets[0].data;
+          const total = valores.reduce((sum, num) => sum + num, 0)
+
+          const media = total / valores.length;
+          this.CategoriaUltimosMesesMedia = Helper.formatCurrency(media)
+
         }
 
       } catch (e) {
@@ -537,5 +600,6 @@ export default {
   width: 110px;
   padding: 0 14px 0 14px;
 }
+
 
 </style>
