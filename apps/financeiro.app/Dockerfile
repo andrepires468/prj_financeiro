@@ -1,6 +1,9 @@
 # Estágio de build
 FROM node:20-alpine as build-stage
 
+ARG VUE_APP_API_BASE_URL
+ARG VUE_APP_API_VERSION
+
 WORKDIR /app
 
 COPY package.json yarn.lock ./

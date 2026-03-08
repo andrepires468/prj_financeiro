@@ -2,7 +2,9 @@
   "name": "prj_financeiro-monorepo",
   "private": true,
   "scripts": {
-    "dev": "pnpm -r --parallel run dev",
-    "build": "pnpm -r run build"
+    "dev:app": "pnpm --filter financeiro_app run dev",
+    "dev:api": "pnpm --filter financeiro_api run dev",
+    "install:all": "pnpm install",
+    "build:all": "pnpm -r run build"
   }
 }

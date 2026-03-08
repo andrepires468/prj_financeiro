@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class FechamentoCategoria extends Model
 {
   protected $connection = 'home';
-  protected $table = 'fechamentocategoria';
+  protected $table = 'FechamentoCategoria';
   protected $primaryKey = 'Id';
   public $timestamps = false;
 

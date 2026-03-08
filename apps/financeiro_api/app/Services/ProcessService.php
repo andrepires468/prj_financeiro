@@ -42,15 +42,44 @@ class ProcessService extends Service
 //    $user_ = Crypt::encrypt($BancoExtrato->GmailUser);
 //    $pass_ = Crypt::encrypt($BancoExtrato->GmailPass);
 
-    $user = utf8_encode(Crypt::decrypt($BancoExtrato->GmailUser));
-    $pass = utf8_encode(str_replace('_', ' ', Crypt::decrypt($BancoExtrato->GmailPass)));
+    try {
+      $user = Crypt::decrypt($BancoExtrato->GmailUser);
+    } catch(\Exception $e) {
+      $user = $BancoExtrato->GmailUser;
+    }
+
+    try {
+      $pass = Crypt::decrypt($BancoExtrato->GmailPass);
+    } catch(\Exception $e) {
+      $pass = $BancoExtrato->GmailPass;
+    }
+
+    // Remove espaços da App Password do Google (formato: "xxxx xxxx xxxx xxxx" -> "xxxxxxxxxxxxxxxx")
+    $pass = str_replace(' ', '', $pass);
 
     $listados = 0;
     $incluidos = 0;
     $emails = 0;
 
     // Conectar ao servidor IMAP do Gmail
-    $mailbox = imap_open('{imap.gmail.com:993/imap/ssl/novalidate-cert}INBOX', $user, $pass);
+    imap_timeout(IMAP_OPENTIMEOUT, 15);
+    imap_timeout(IMAP_READTIMEOUT, 15);
+    imap_timeout(IMAP_WRITETIMEOUT, 15);
+
+//    \Log::debug('IMAP auth', [
+//      'user'      => $user,
+//      'user_len'  => strlen($user),
+//      'pass_len'  => strlen($pass),
+//      'pass_last4'=> substr($pass, -4),
+//    ]);
+
+    $mailbox = @imap_open('{imap.gmail.com:993/imap/ssl/novalidate-cert}INBOX', $user, $pass, 0, 1);
+
+    if(!$mailbox) {
+      $errors = imap_errors();
+      $errorMsg = $errors ? implode(' | ', $errors) : 'Falha ao conectar ao servidor IMAP';
+      throw new \Exception('Erro IMAP: ' . $errorMsg);
+    }
 
     // Definir critérios de pesquisa (por exemplo, o endereço do remetente)
     $search_criteria = 'UNSEEN FROM "@nubank.com.br" SUBJECT "Extrato da sua conta do Nubank"';
@@ -117,7 +146,7 @@ class ProcessService extends Service
       } // foreach emails
 
 //      if($incluidos > 0)
-        $this->Fechamento();
+      $this->Fechamento();
 
     } // if emails
 

@@ -2,16 +2,15 @@
 
 ## Structure
 - `/apps/financeiro_api`: Backend API built with PHP (Lumen 10).
-- `/apps/financeiro_app`: Frontend Application built with Vue 3 and Capacitor 7.
+- `/apps/financeiro_app`: Frontend Application built with Vue 3 and Vue CLI.
 
 ## Tech Stack Details
-- **Backend**: PHP 8.x, Lumen 10, SQL Server (PDO).
-- **Frontend**: Vue 3 (Composition API), TypeScript, Capacitor 7.
+- **Backend**: PHP 8.x, Lumen 10, mysql (PDO).
+- **Frontend**: Vue 3, Vue CLI.
 - **Architecture**: Layered Architecture using Services and Interfaces.
 
 ## Instructions for Agent
 1. **Full-Stack Awareness**: When creating or modifying features, always check if changes are required in both the API (Controllers/Services) and the App (Services/State).
 2. **Layered Pattern**: Strictly follow the established pattern of using Services and Interfaces. Do not put business logic directly into Controllers or Vue Components.
-3. **Database**: Use SQL Server compatible syntax for any raw queries or migrations.
+3. **Database**: Use Mysql compatible syntax for any raw queries or migrations.
 4. **Localization**: This is a multi-language system. Ensure any new UI strings or API responses support the existing localization workflow.
-5. **Cross-Platform**: Remember that the frontend runs on Web, Android, and iOS via Capacitor. Avoid using browser-only APIs without checking for Capacitor equivalents.

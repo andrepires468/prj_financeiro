@@ -1,0 +1,70 @@
+services:
+  api:
+    build:
+      context: ./apps/financeiro_api
+      dockerfile: Dockerfile
+    container_name: financeiro_api
+    restart: unless-stopped
+    volumes:
+      - ./apps/financeiro_api:/var/www
+      - api_vendor:/var/www/vendor
+    networks:
+      - financeiro_network
+    environment:
+      APP_ENV: local
+      XDEBUG_MODE: debug
+      XDEBUG_SESSION: PHPSTORM
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mysql
+
+  nginx_api:
+    image: nginx:alpine
+    container_name: financeiro_nginx_api
+    restart: unless-stopped
+    ports:
+      - "8099:80"
+    volumes:
+      - ./apps/financeiro_api:/var/www
+      - ./apps/financeiro_api/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+    networks:
+      - financeiro_network
+
+  app:
+    build:
+      context: ./apps/financeiro.app
+      dockerfile: Dockerfile
+      args:
+        VUE_APP_API_BASE_URL: http://localhost:8099
+        VUE_APP_API_VERSION: /api/v1
+    container_name: financeiro_app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - financeiro_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: financeiro_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234}
+      MYSQL_DATABASE: ${DB_DATABASE:-home}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - financeiro_network
+
+volumes:
+  mysql_data:
+  api_vendor:
+
+networks:
+  financeiro_network:
+    driver: bridge
