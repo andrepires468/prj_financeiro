@@ -9,6 +9,9 @@ services:
       - .:/var/www
     networks:
       - financeiro_network
+    environment:
+      # Em local, manter como php-fpm puro. No Render, ENTRYPOINT ajusta para nginx.
+      APP_ENV: local
 
   nginx:
     image: nginx:alpine
@@ -23,6 +26,23 @@ services:
       - app
     networks:
       - financeiro_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: financeiro_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - financeiro_network
+
+volumes:
+  mysql_data:
 
 networks:
   financeiro_network:
