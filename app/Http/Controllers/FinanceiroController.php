@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Helpers\ApiResponse;
+use App\Services\FinanceiroService;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+
+class FinanceiroController extends Controller
+{
+
+  protected $financeiroService;
+
+  public function __construct(FinanceiroService $financeiroService)
+  {
+    $this->financeiroService = $financeiroService;
+  }
+
+  public function CalendarioExtrato(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->CalendarioExtrato($request);
+      return ApiResponse::GetSuccessResponse($result);
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
+  public function ListaExtrato(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ListaExtrato($request);
+      return ApiResponse::GetSuccessResponse($result);
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
+  public function UpdateExtrato(Request $request)
+  {
+
+    try {
+
+      $this->financeiroService->UpdateExtrato($request);
+      return ApiResponse::GetSuccessResponse([], 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+  public function ChartCategoriasMes(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ChartCategoriasMes($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+  public function ChartCategoriaUltimosMeses(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ChartCategoriaUltimosMeses($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
+  public function ChartUltimosMeses(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->ChartUltimosMeses($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato atualizado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+
+
+}
