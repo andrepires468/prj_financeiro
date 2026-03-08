@@ -1,0 +1,137 @@
+#app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--bs-gray-600);
+}
+
+.btn {
+    border-radius: 3px;
+}
+
+.btn-bd-primary {
+    --bd-violet-bg: #712cf9;
+    --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+    --bs-btn-font-weight: 600;
+    --bs-btn-color: var(--bs-white);
+    --bs-btn-bg: var(--bd-violet-bg);
+    --bs-btn-border-color: var(--bd-violet-bg);
+    --bs-btn-hover-color: var(--bs-white);
+    --bs-btn-hover-bg: #6528e0;
+    --bs-btn-hover-border-color: #6528e0;
+    --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+    --bs-btn-active-color: var(--bs-btn-hover-color);
+    --bs-btn-active-bg: #5a23c8;
+    --bs-btn-active-border-color: #5a23c8;
+}
+
+body {
+    background-color: var(--bs-gray-100) !important;
+}
+
+hr {
+    border-color: var(--bs-gray-500);
+}
+
+.shadow {
+    box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.082) !important;
+}
+
+.table > :not(caption) > * > * {
+    background-color: transparent;
+}
+
+.text-align-end {
+    text-align: left;
+}
+
+.text-align-end {
+    text-align: right;
+}
+
+.text-align-center {
+    text-align: center;
+}
+
+.content-body {
+    margin-top: 30px;
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-fill{
+    display: block;
+}
+
+.offcanvas-md .offcanvas-body {
+    background-color: var(--bs-white) !important;
+}
+
+.painel-internal {
+    border: 1px solid var(--bs-gray-800) !important;
+    border-radius: 6px;
+    /*box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.08);*/
+    padding: 22px;
+}
+
+.form-group {
+    margin: 8px 0px 18px 0px;
+}
+
+.align-center {
+    text-align: center;
+}
+
+legend, h1, h2, h3, h4, h5, h6 {
+    margin: 10px 0px 24px 0px;
+}
+
+legend {
+    border-bottom: 1px solid var(--bs-gray-700);
+}
+
+label.form-control-label {
+    display: block;
+    margin: 4px 0px 8px 0px;
+}
+
+input.form-control {
+    border-radius: 2px;
+}
+
+.offcanvas-body {
+    border: none !important;
+    height: calc(100vh - 38px);
+}
+
+.color-input {
+    border-radius: 2px;
+    top: 4px;
+}
+
+.color-input .box {
+    border-radius: 2px;
+    margin: 0px 10px 0px 10px;
+    width: 60px;
+    height: 30px;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-left {
+    float: left;
+}
+
+.extrato-entrada {
+    color: #2aa525;
+}
+
+.extrato-saida {
+    color: #cb4a4a;
+}
