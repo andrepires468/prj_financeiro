@@ -1,0 +1,8 @@
+{
+  "name": "prj_financeiro-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build"
+  }
+}
