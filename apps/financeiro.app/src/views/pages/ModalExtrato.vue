@@ -10,7 +10,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">Extrato</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar" @click.capture="moveFocusBeforeClose"></button>
               </div>
 
               <div class="modal-body" v-if="ExtratoSel">
@@ -26,7 +26,7 @@
                   </div>
                   <div class="col-3">
                     <p :class="`${(ExtratoSel.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'} text-align-end`">
-                      {{ ExtratoSel.Valor }}
+                      {{ ocultarValores ? '••••••' : ExtratoSel.Valor }}
                     </p>
                   </div>
                 </div>
@@ -86,7 +86,7 @@
 
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" id="fecharModal">Cancelar</button>
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" id="fecharModal" @click.capture="moveFocusBeforeClose">Cancelar</button>
                 <button type="button" class="btn btn-primary" @click="updateExtratoSel">Salvar</button>
               </div>
             </div>
@@ -111,6 +111,7 @@ export default {
     ExtratoSel: null,
     CategoriaLista: null,
     CategoriaSel: null,
+    ocultarValores: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -119,6 +120,12 @@ export default {
     }
   },
   methods: {
+    /** Remove o foco do elemento antes do Bootstrap aplicar aria-hidden, evitando warning de acessibilidade. */
+    moveFocusBeforeClose() {
+      if (document.activeElement && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    },
     async updateExtratoSel() {
 
       try {

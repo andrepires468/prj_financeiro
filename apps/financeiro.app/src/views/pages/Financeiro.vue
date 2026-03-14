@@ -4,6 +4,7 @@
       :ExtratoSel="ExtratoSel"
       :CategoriaLista="CategoriaLista"
       :CategoriaSel="CategoriaSel"
+      :ocultarValores="ocultarValores"
       @updateExtrato="updateExtrato()"
   />
 
@@ -47,6 +48,11 @@
           </span>
 
         </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleOcultarValores" :title="ocultarValores ? 'Exibir valores' : 'Ocultar valores'">
+          <b-icon-eye v-if="!ocultarValores" class="icon"/>
+          <b-icon-eye-slash v-else class="icon"/>
+          {{ ocultarValores ? 'Exibir valores' : 'Ocultar valores' }}
+        </button>
       </div>
 
     </div>
@@ -60,6 +66,7 @@
           <strong class="d-inline-block mb-2 text-success">Categorias Mês</strong>
           <Bar
               v-if="ChartCategoriasMes"
+              :key="'categorias-mes-' + ocultarValores"
               id="chart-categorias-mes"
               :options="chartBarraInvertidaOptions"
               :data="ChartCategoriasMes"
@@ -89,13 +96,14 @@
 
           <Bar
               v-if="ChartCategoriaUltimosMeses"
+              :key="'categoria-ultimos-' + ocultarValores"
               id="chart-categoria-ultimos-meses"
               :options="chartBarraOptions"
               :data="ChartCategoriaUltimosMeses"
           />
 
           <div v-if="CategoriaUltimosMesesMedia" class="text-align-center mt-2 text-sm">
-            média de <b>{{CategoriaUltimosMesesMedia}}</b> dos últimos {{ChartCategoriaUltimosMeses?.labels?.length}} mêses
+            média de <b>{{ ocultarValores ? '••••••' : CategoriaUltimosMesesMedia }}</b> dos últimos {{ChartCategoriaUltimosMeses?.labels?.length}} mêses
           </div>
 
           <div v-else class="text-align-center p-4">
@@ -113,6 +121,7 @@
           </strong>
           <Bar
               v-if="ChartUltimosMeses"
+              :key="'ultimos-meses-' + ocultarValores"
               id="chart-ultimos-meses"
               :options="chartBarraOptions"
               :data="ChartUltimosMeses"
@@ -165,7 +174,7 @@
           </td>
           <td class="item-extrato-valor">
             <span :class="`small ${(item.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'}`">
-              {{ item.Valor }}
+              {{ ocultarValores ? '••••••' : item.Valor }}
             </span>
           </td>
         </tr>
@@ -200,6 +209,7 @@ export default {
   data() {
     return {
       isSync: false,
+      ocultarValores: false,
       CalendarioLista: [],
       CalendarioSel: null,
       Extrato: [],
@@ -210,51 +220,6 @@ export default {
       CategoriaLista: [],
       CategoriaSel: null,
       CategoriaFiltroSel: null,
-
-      chartBarraInvertidaOptions: {
-        indexAxis: 'y', // Define o eixo de categorias como Y (para barras horizontais)
-        plugins: {
-          datalabels: {
-            formatter: function (value) {
-              return 'R$' + value.toFixed(2).replace('.', ',');
-            },
-            color: '#000',
-            anchor: 'end',
-            align: 'right'
-          }
-        },
-        scales: {
-          x: {
-            display: false,
-            ticks: {
-              callback: function (value) {
-                return 'R$' + value.toFixed(2).replace('.', ',');
-              }
-            }
-          },
-          y: {
-            beginAtZero: true,
-          }
-        }
-      },
-      chartBarraOptions: {
-        responsive: true,
-        scales: {
-          y: {
-            display: false,
-          }
-        },
-        plugins: {
-          datalabels: {
-            formatter: function (value) {
-              return 'R$' + value.toFixed(2).replace('.', ',');
-            },
-            color: '#5a5a5a', // Cor dos rótulos
-            anchor: 'end',
-            align: 'top'
-          }
-        },
-      },
 
       ChartCategoriasMes: null,
       QtdMeses_ChartCategoria: 6,
@@ -296,6 +261,10 @@ export default {
         this.CalendarioSel = this.CalendarioLista[0]
       }
 
+      if (window.localStorage.getItem('financeiro.ocultarValores') === 'true') {
+        this.ocultarValores = true
+      }
+
       await this.getExtrato()
 
       await this.categoriaLista()
@@ -310,7 +279,75 @@ export default {
       Helper.messageExceptionHandler(e)
     }
   },
+  computed: {
+    chartBarraInvertidaOptions() {
+      const ocultar = this.ocultarValores
+      return {
+        indexAxis: 'y',
+        plugins: {
+          datalabels: {
+            display: !ocultar,
+            formatter: function (value) {
+              return ocultar ? '••••••' : 'R$' + value.toFixed(2).replace('.', ',')
+            },
+            color: '#000',
+            anchor: 'end',
+            align: 'right'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => ocultar ? '••••••' : ('R$ ' + Number(context.raw).toFixed(2).replace('.', ','))
+            }
+          }
+        },
+        scales: {
+          x: {
+            display: false,
+            ticks: {
+              callback: function (value) {
+                return 'R$' + value.toFixed(2).replace('.', ',')
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+          }
+        }
+      }
+    },
+    chartBarraOptions() {
+      const ocultar = this.ocultarValores
+      return {
+        responsive: true,
+        scales: {
+          y: {
+            display: false,
+          }
+        },
+        plugins: {
+          datalabels: {
+            display: !ocultar,
+            formatter: function (value) {
+              return ocultar ? '••••••' : 'R$' + value.toFixed(2).replace('.', ',')
+            },
+            color: '#5a5a5a',
+            anchor: 'end',
+            align: 'top'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => ocultar ? '••••••' : ('R$ ' + Number(context.raw).toFixed(2).replace('.', ','))
+            }
+          }
+        },
+      }
+    },
+  },
   methods: {
+    toggleOcultarValores() {
+      this.ocultarValores = !this.ocultarValores
+      window.localStorage.setItem('financeiro.ocultarValores', this.ocultarValores)
+    },
     normalizarTexto(texto) {
       return Helper.normalizarTexto(texto);
     },
