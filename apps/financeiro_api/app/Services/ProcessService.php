@@ -16,9 +16,12 @@ use Illuminate\Support\Facades\Crypt;
 class ProcessService extends Service
 {
 
-  public function __construct()
+  protected $geminiService;
+
+  public function __construct(GeminiService $geminiService)
   {
     parent::__construct();
+    $this->geminiService = $geminiService;
   }
 
   public function ImportExtrato(Request $request)
@@ -296,57 +299,168 @@ class ProcessService extends Service
   }
 
 
-//  private function categorizarExtratoPassado($Extrato)
-//  {
-//
-//    foreach($Extrato as $extrato) {
-//
-//    }
-//
-//  }
-//
-//  private function tokenizarExtrato($Extrato)
-//  {
-//
-//    foreach($Extrato as $extrato) {
-//      $descricao = Functions::limparTexto($extrato->Descricao);
-//      $descricao_tokens = json_encode(Functions::tokenizarTexto($descricao));
-//      $extrato->DescricaoTokens = $descricao_tokens;
-//      $extrato->save();
-//    }
-//
-//  }
-//
-//  public function CategorizarExtrato(Request $request)
-//  {
-//
-//    if(!$request->mes)
-//      throw new \Exception('mes não passado');
-//
-//    if(!$request->ano)
-//      throw new \Exception('ano não passado');
-//
-//    $mes = $request->mes;
-//    $ano = $request->ano;
-//
-//    $Extrato = Extrato::select()
-//      ->whereNull('Extrato.DescricaoTokens')
-//      ->get();
-//
-//    $this->tokenizarExtrato($Extrato);
-//
-//    // Obtém a data do primeiro dia do mês
-//    $data_inicio = date('Y-m-01', strtotime("first day of {$ano}-{$mes}"));
-//
-//    // Obtém a data do último dia do mês
-//    $data_fim = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
-//
-//    $Extrato = Extrato::select()
-//      ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
-//      ->get();
-//
-//    $this->categorizarExtratoPassado($Extrato);
-//
-//  }
+  /**
+   * Categoriza itens do extrato do mês selecionado usando Gemini API.
+   * Usa histórico dos últimos 3 meses (apenas Descricao + Categoria) e atualiza somente IdCategoria.
+   */
+  public function CategorizarExtrato(Request $request)
+  {
+    if (!$request->mes || $request->mes === '')
+      throw new \Exception('mes não passado');
+
+    if (!$request->ano || $request->ano === '')
+      throw new \Exception('ano não passado');
+
+    $mes = (int) $request->mes;
+    $ano = (int) $request->ano;
+
+    $idBancoExtrato = $this->idBancoExtrato;
+
+    // 1. Categorias
+    $categorias = Categoria::select('Id', 'CategoriaNome')
+      ->orderBy('CategoriaNome')
+      ->get();
+
+    $idsCategoria = $categorias->pluck('Id')->map(function ($id) { return (int) $id; })->all();
+
+    // 2. Histórico: últimos 3 meses, já categorizados (Descricao, CategoriaNome), limit 300
+    $datasBase = Functions::ultimasDatadaBase(3);
+    $data_inicio_hist = $datasBase[count($datasBase) - 1]['data_inicio_mes'] . ' 00:00:00';
+    $data_fim_hist = $datasBase[0]['data_fim_mes'] . ' 23:59:59';
+
+    $historico = Extrato::selectRaw('Extrato.Descricao, Categoria.CategoriaNome')
+      ->join('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
+      ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
+      ->whereBetween('Extrato.Data', [$data_inicio_hist, $data_fim_hist])
+      ->orderByDesc('Extrato.Data')
+      ->limit(300)
+      ->get();
+
+    // 3. Itens a categorizar: mês selecionado, sem categoria (Id, Descricao)
+    $data_inicio_mes = date('Y-m-01', strtotime("first day of {$ano}-{$mes}"));
+    $data_fim_mes = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
+
+    $itensACategorizar = Extrato::select('Extrato.Id', 'Extrato.Descricao')
+      ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
+      ->whereNull('Extrato.IdCategoria')
+      ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->get();
+
+    if ($itensACategorizar->isEmpty()) {
+      return ['atualizados' => 0];
+    }
+
+    $idsEnviados = $itensACategorizar->pluck('Id')->map(function ($id) { return (int) $id; })->all();
+
+    // 4. Montar prompt
+    $linhasCategorias = $categorias->map(function ($c) {
+      return $c->Id . ' - ' . $c->CategoriaNome;
+    })->implode("\n");
+
+    $linhasHistorico = $historico->map(function ($r) {
+      return 'Descricao: ' . $r->Descricao . ' -> Categoria: ' . $r->CategoriaNome;
+    })->implode("\n");
+
+    $linhasItens = $itensACategorizar->map(function ($r) {
+      return 'Id: ' . $r->Id . ', Descricao: ' . $r->Descricao;
+    })->implode("\n");
+
+    $prompt = <<<PROMPT
+Você classifica transações bancárias em categorias. Use apenas as categorias fornecidas abaixo.
+
+Categorias disponíveis (Id - Nome):
+{$linhasCategorias}
+
+Exemplos de transações já categorizadas (Descricao -> Categoria):
+{$linhasHistorico}
+
+Itens a categorizar (para cada um responda com o Id e o IdCategoria da categoria correta):
+{$linhasItens}
+
+Responda SOMENTE com um JSON: array de objetos, cada um com as chaves "Id" (número) e "IdCategoria" (número). Nada mais. Exemplo: [{"Id":123,"IdCategoria":1},{"Id":124,"IdCategoria":2}]
+PROMPT;
+
+    // 5. Chamar Gemini
+    try {
+      $jsonText = $this->geminiService->generateContent($prompt);
+    } catch (\Exception $e) {
+      $msg = $e->getMessage();
+      if ($msg === '') {
+        $msg = 'erro desconhecido (verifique GEMINI_API_KEY e logs)';
+      }
+      throw new \Exception('Falha ao categorizar com IA: ' . $msg);
+    }
+
+    // 6. Parsear e validar resposta (extrair JSON mesmo com markdown ou texto em volta)
+    $sugestoes = $this->parseGeminiCategorizacaoResponse($jsonText);
+    if ($sugestoes === null) {
+      $preview = strlen($jsonText) > 200 ? substr($jsonText, 0, 200) . '...' : $jsonText;
+      throw new \Exception('Resposta da IA inválida. Tente novamente. Resposta recebida: ' . $preview);
+    }
+
+    $idsCategoriaSet = array_flip($idsCategoria);
+    $atualizados = 0;
+
+    foreach ($sugestoes as $item) {
+      $id = isset($item['Id']) ? (int) $item['Id'] : (isset($item['id']) ? (int) $item['id'] : null);
+      $idCategoria = isset($item['IdCategoria']) ? (int) $item['IdCategoria'] : (isset($item['idCategoria']) ? (int) $item['idCategoria'] : null);
+      if ($id === null || $idCategoria === null) continue;
+      if (!in_array($id, $idsEnviados, true)) continue;
+      if (!isset($idsCategoriaSet[$idCategoria])) continue;
+
+      $extrato = Extrato::where('Id', '=', $id)
+        ->where('IdBancoExtrato', '=', $idBancoExtrato)
+        ->first();
+      if (!$extrato) continue;
+
+      $extrato->IdCategoria = $idCategoria;
+      $extrato->save();
+
+      $dataExtrato = new \DateTime($extrato->Data);
+      $dataBase = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+      $this->procFechamentoCategoria($idCategoria, $dataBase);
+
+      $atualizados++;
+    }
+
+    return ['atualizados' => $atualizados];
+  }
+
+  /**
+   * Extrai e decodifica o array JSON da resposta da Gemini (tolera markdown, texto em volta e JSON truncado).
+   * Retorna array de sugestões ou null se inválido.
+   */
+  private function parseGeminiCategorizacaoResponse(string $jsonText): ?array
+  {
+    $jsonText = trim($jsonText);
+    // Remove blocos markdown ```json ... ``` ou ``` ... ```
+    $jsonText = preg_replace('/^```(?:json)?\s*\n?/i', '', $jsonText);
+    $jsonText = preg_replace('/\n?```\s*$/i', '', $jsonText);
+    $jsonText = trim($jsonText);
+
+    $start = strpos($jsonText, '[');
+    if ($start === false) {
+      return null;
+    }
+
+    $end = strrpos($jsonText, ']');
+    if ($end !== false && $end > $start) {
+      $jsonText = substr($jsonText, $start, $end - $start + 1);
+    } else {
+      // Resposta truncada (sem ] no final): usa do [ até o fim e tenta fechar o array
+      $jsonText = substr($jsonText, $start);
+      $jsonText = rtrim($jsonText);
+      if (substr($jsonText, -1) === ',') {
+        $jsonText = substr($jsonText, 0, -1);
+      }
+      $jsonText .= ']';
+    }
+
+    $sugestoes = json_decode($jsonText, true);
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($sugestoes)) {
+      return null;
+    }
+    return $sugestoes;
+  }
 
 }

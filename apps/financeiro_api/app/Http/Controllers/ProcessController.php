@@ -44,7 +44,7 @@ class ProcessController extends Controller
       return ApiResponse::GetSuccessResponse($result, 'Processo Concluído');
 
     } catch(\Exception $ex) {
-      return ApiResponse::GetErrorResponse($ex, 'bad request', Response::HTTP_BAD_REQUEST);
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage() ?: 'Erro ao categorizar', Response::HTTP_BAD_REQUEST);
     }
 
   }

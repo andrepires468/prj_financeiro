@@ -115,12 +115,12 @@ export default {
 </script>
 
 <style>
-/* Altura máxima 38px */
+/* Altura máxima 38px; border-radius 2px */
 .multiselect {
   min-height: 38px !important;
   max-height: 38px !important;
+  border-radius: 2px !important;
 }
-
 .multiselect__tags {
   min-height: 38px !important;
   max-height: 38px !important;
@@ -129,6 +129,7 @@ export default {
   display: flex !important;
   align-items: center !important;
   flex-wrap: wrap !important;
+  border-radius: 2px !important;
 }
 
 .multiselect__input,

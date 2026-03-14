@@ -137,8 +137,21 @@
     </div>
     <div class="col-md-6">
 
-      <div class="alert alert-warning text-align-center" v-if="Extrato.filter( i => !i.IdCategoria).length > 0">
-        Restam {{ Extrato.filter(i => !i.IdCategoria).length }} item(s) para classificar
+      <div class="alert alert-warning text-align-center d-flex flex-wrap align-items-center justify-content-center gap-2" v-if="Extrato.filter( i => !i.IdCategoria).length > 0">
+        <span>Restam {{ Extrato.filter(i => !i.IdCategoria).length }} item(s) para classificar</span>
+        <button type="button"
+                class="btn btn-sm btn-outline-primary"
+                :disabled="!CalendarioSel || isCategorizandoIA"
+                @click="categorizarComIA"
+                title="Categorizar automaticamente com IA (Gemini)">
+          <span v-if="isCategorizandoIA">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Categorizando…
+          </span>
+          <span v-else>
+            Categorizar com IA
+          </span>
+        </button>
       </div>
 
       <div class="row g-2 align-items-center mb-2">
@@ -238,6 +251,7 @@ export default {
   data() {
     return {
       isSync: false,
+      isCategorizandoIA: false,
       ocultarValores: false,
       CalendarioLista: [],
       CalendarioSel: null,
@@ -458,8 +472,15 @@ export default {
           }
         })
 
-        if (this.CategoriaLista)
-          this.CategoriaFiltroSel = this.CategoriaLista.find(i => i.Id == 1);
+        if (this.CategoriaLista) {
+          const savedId = window.localStorage.getItem('financeiro.CategoriaFiltroComparativo')
+          if (savedId) {
+            const found = this.CategoriaLista.find(i => i.Id === parseInt(savedId, 10))
+            this.CategoriaFiltroSel = found ?? this.CategoriaLista.find(i => i.Id == 1)
+          } else {
+            this.CategoriaFiltroSel = this.CategoriaLista.find(i => i.Id == 1)
+          }
+        }
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
@@ -622,8 +643,31 @@ export default {
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
+      } finally {
+        this.isSync = false;
       }
 
+    },
+    async categorizarComIA() {
+      if (!this.CalendarioSel || this.Extrato.filter(i => !i.IdCategoria).length === 0) return;
+      try {
+        this.isCategorizandoIA = true;
+        const result = await processService.categorizarExtrato({
+          mes: this.CalendarioSel.Mes,
+          ano: this.CalendarioSel.Ano
+        });
+        if (!result.Success) throw new Error(Helper.getMessageError(result));
+        const n = result.Data?.atualizados ?? 0;
+        await this.getExtrato();
+        this.getChartCategoriasMes();
+        this.getChartCategoriaUltimosMeses();
+        swalToast.fire('', n > 0 ? n + ' item(ns) categorizado(s) com IA' : 'Nenhum item para categorizar', 'success');
+      } catch (e) {
+        swalToast.fire('', 'Erro ao categorizar com IA: ' + (e?.message || 'tente novamente'), 'error');
+        Helper.messageExceptionHandler(e);
+      } finally {
+        this.isCategorizandoIA = false;
+      }
     },
     async getChartCategoriasMes(qtdMeses) {
 
@@ -693,6 +737,9 @@ export default {
   },
   watch: {
     async CategoriaFiltroSel(value) {
+      if (value?.Id != null) {
+        window.localStorage.setItem('financeiro.CategoriaFiltroComparativo', String(value.Id))
+      }
       this.getChartCategoriaUltimosMeses()
     }
   }
