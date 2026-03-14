@@ -17,6 +17,7 @@
     :loading="loading"
     :limit="limit"
     :disabled="disabled"
+    :openDirection="openDirection"
     @select="onSelect"
     @update:modelValue="$emit('update:modelValue', $event)"
 
@@ -94,6 +95,11 @@ export default {
       type: Boolean,
       default: false,
     },
+    /** Direção de abertura do dropdown: 'below'/'bottom' para baixo, 'above'/'top' para cima. Vazio = automático */
+    openDirection: {
+      type: String,
+      default: '',
+    },
   },
   methods: {
     getOptionLabel(option) {
@@ -109,16 +115,61 @@ export default {
 </script>
 
 <style>
+/* Altura máxima 38px */
+.multiselect {
+  min-height: 38px !important;
+  max-height: 38px !important;
+}
 
+.multiselect__tags {
+  min-height: 38px !important;
+  max-height: 38px !important;
+  height: 38px !important;
+  padding: 5px 40px 5px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+}
 
+.multiselect__input,
+.multiselect__single {
+  min-height: 20px !important;
+  line-height: 20px !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.multiselect__placeholder {
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  line-height: 20px !important;
+}
+
+.multiselect__tag {
+  margin-bottom: 0 !important;
+}
+
+.multiselect__content-wrapper {
+  max-height: 240px;
+}
+
+.multiselect__select {
+  height: 38px !important;
+  top: 0 !important;
+}
+
+.multiselect__spinner {
+  height: 36px !important;
+  top: 1px !important;
+}
 
 .btn-group .multiselect,
 .btn-group .multiselect * {
   border-radius: 0px !important;
 }
 
-
-.btn-group .multiselect__tags{
+.btn-group .multiselect__tags {
   border-radius: 0px !important;
   border-right: none;
   border-left: none;
@@ -126,6 +177,4 @@ export default {
   border-bottom: 1px solid !important;
   border-color: var(--bs-btn-border-color) !important;
 }
-
-
 </style>

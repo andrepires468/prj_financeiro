@@ -92,6 +92,7 @@
                 label="CategoriaNome"
                 placeholder=""
                 showCategoryIcon
+                openDirection="below"
             />
           </div>
 
@@ -155,7 +156,7 @@
         </div>
         <div class="col-auto flex-grow-1" style="min-width: 200px;">
           <input type="text"
-                 class="form-control form-control-sm"
+                 class="form-control form-control-md"
                  id="pesquisaCategoria"
                  v-model="pesquisaExtrato"
                  placeholder="Filtrar extrato">
@@ -224,6 +225,7 @@ import mesesModel from '../../models/meses.model'
 import categoriaIconsModel from '../../models/categoria.icons.model'
 import moment from "moment";
 import ModalExtrato from "@/views/pages/ModalExtrato";
+import { getTheme, THEME } from '@/helpers/theme.service'
 import {Bar} from 'vue-chartjs'
 import {Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale} from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
@@ -256,9 +258,14 @@ export default {
       CategoriaUltimosMesesMedia: null,
       QtdMeses_ChartEntradaSaida: 4,
       ChartUltimosMeses: null,
+      /** Tema atual para reatividade dos gráficos (light/dark) */
+      theme: getTheme(),
     }
   },
   async mounted() {
+    const onThemeChanged = (e) => { this.theme = e.detail }
+    window.addEventListener('financeiro-theme-changed', onThemeChanged)
+    this._themeCleanup = () => window.removeEventListener('financeiro-theme-changed', onThemeChanged)
 
     try {
 
@@ -308,6 +315,9 @@ export default {
       Helper.messageExceptionHandler(e)
     }
   },
+  beforeUnmount() {
+    if (typeof this._themeCleanup === 'function') this._themeCleanup()
+  },
   computed: {
     /** Extrato filtrado por pesquisa (texto) e por categoria selecionada */
     ExtratoFiltrado() {
@@ -330,17 +340,31 @@ export default {
     },
     chartBarraInvertidaOptions() {
       const ocultar = this.ocultarValores
+      const isDark = this.theme === THEME.DARK
+      const textColor = isDark ? '#e2e2e2' : '#000'
       return {
         indexAxis: 'y',
+        layout: {
+          padding: {
+            top: 0,
+            right: 70,
+            bottom: 0,
+            left: 0
+          }
+        },
         plugins: {
           datalabels: {
             display: !ocultar,
             formatter: function (value) {
               return ocultar ? '••••••' : 'R$' + value.toFixed(2).replace('.', ',')
             },
-            color: '#000',
+            color: textColor,
             anchor: 'end',
             align: 'right'
+          },
+          legend: {
+            labels: { color: textColor },
+            padding: { bottom: 16 }
           },
           tooltip: {
             callbacks: {
@@ -352,6 +376,7 @@ export default {
           x: {
             display: false,
             ticks: {
+              color: textColor,
               callback: function (value) {
                 return 'R$' + value.toFixed(2).replace('.', ',')
               }
@@ -359,17 +384,31 @@ export default {
           },
           y: {
             beginAtZero: true,
+            ticks: { color: textColor }
           }
         }
       }
     },
     chartBarraOptions() {
       const ocultar = this.ocultarValores
+      const isDark = this.theme === THEME.DARK
+      const textColor = isDark ? '#e2e2e2' : '#5a5a5a'
       return {
         responsive: true,
+        layout: {
+          padding: {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0
+          }
+        },
         scales: {
           y: {
             display: false,
+          },
+          x: {
+            ticks: { color: textColor }
           }
         },
         plugins: {
@@ -378,9 +417,13 @@ export default {
             formatter: function (value) {
               return ocultar ? '••••••' : 'R$' + value.toFixed(2).replace('.', ',')
             },
-            color: '#5a5a5a',
+            color: textColor,
             anchor: 'end',
             align: 'top'
+          },
+          legend: {
+            labels: { color: textColor },
+            padding: { bottom: 16 }
           },
           tooltip: {
             callbacks: {

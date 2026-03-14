@@ -24,6 +24,9 @@ import Pagination from "@/components/Pagination";
 import DatePicker from "@/components/DatePicker";
 import MultselectForm from "@/components/MultselectForm";
 
+import { initTheme } from '@/helpers/theme.service'
+initTheme()
+
 import 'bootstrap/dist/css/bootstrap.css'
 import './assets/css/default.css'
 

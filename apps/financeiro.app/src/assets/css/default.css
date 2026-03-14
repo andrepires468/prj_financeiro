@@ -101,7 +101,7 @@ label.form-control-label {
 
 input.form-control {
     border-radius: 2px;
-    height: 42px;
+    /* height: 42px; */
 }
 
 .offcanvas-body {
@@ -135,4 +135,317 @@ input.form-control {
 
 .extrato-saida {
     color: #cb4a4a;
+}
+
+/* ========== Modo escuro (data-bs-theme="dark") ========== */
+
+[data-bs-theme="dark"] body {
+    background-color: var(--bs-body-bg) !important;
+}
+
+[data-bs-theme="dark"] #app {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .shadow {
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-bs-theme="dark"] .shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-bs-theme="dark"] hr {
+    border-color: var(--bs-border-color);
+    opacity: 0.5;
+}
+
+[data-bs-theme="dark"] .offcanvas-md .offcanvas-body,
+[data-bs-theme="dark"] .offcanvas-body {
+    background-color: var(--bs-body-bg) !important;
+}
+
+[data-bs-theme="dark"] .painel-internal {
+    border-color: var(--bs-border-color) !important;
+}
+
+[data-bs-theme="dark"] legend {
+    border-bottom-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .extrato-entrada {
+    color: #5dd958;
+}
+
+[data-bs-theme="dark"] .extrato-saida {
+    color: #e87373;
+}
+
+/* Tabela extrato (Financeiro.vue) - hover da linha */
+[data-bs-theme="dark"] .table-financeiro tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-bs-theme="dark"] .item-extrato-data-repet {
+    color: var(--bs-secondary-color);
+}
+
+/* Lista de categorias no modal (ModalExtrato.vue) */
+[data-bs-theme="dark"] .categoria-lista {
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+}
+
+[data-bs-theme="dark"] .categoria-lista .categoria-lista-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* DatePicker - vars e bordas no modo escuro */
+[data-bs-theme="dark"] .dp__input,
+[data-bs-theme="dark"] .dp__input:hover {
+    border-color: var(--bs-border-color) !important;
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="dark"] .dp__today {
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .dp__active_date,
+[data-bs-theme="dark"] .dp__overlay_cell_active {
+    border-color: var(--bs-primary);
+    background-color: var(--bs-primary) !important;
+    color: var(--bs-primary-color) !important;
+}
+
+/* Cards/rows com border rounded (Financeiro, Categoria) */
+[data-bs-theme="dark"] .border {
+    border-color: var(--bs-border-color) !important;
+}
+
+[data-bs-theme="dark"] .border-bottom {
+    border-bottom-color: var(--bs-border-color) !important;
+}
+
+/* Alertas mantêm contraste no escuro */
+[data-bs-theme="dark"] .alert-warning {
+    --bs-alert-bg: rgba(255, 193, 7, 0.15);
+    --bs-alert-border-color: rgba(255, 193, 7, 0.4);
+    --bs-alert-color: var(--bs-warning-text-emphasis);
+}
+
+/* Links e footer */
+[data-bs-theme="dark"] .text-muted {
+    color: var(--bs-secondary-color) !important;
+}
+
+[data-bs-theme="dark"] footer a {
+    color: var(--bs-link-color);
+}
+
+[data-bs-theme="dark"] footer a:hover {
+    color: var(--bs-link-hover-color);
+}
+
+/* Inputs e formulários */
+[data-bs-theme="dark"] .form-control {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-control:focus {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-primary);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+/* Botões outline no modo escuro */
+[data-bs-theme="dark"] .btn-outline-secondary {
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+    background-color: var(--bs-secondary-bg);
+    border-color: var(--bs-secondary-border-color);
+    color: var(--bs-secondary-color);
+}
+
+/* Dropdown Bootstrap e itens */
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+
+/* MultselectForm (vue-multiselect) - modo escuro */
+[data-bs-theme="dark"] .multiselect {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .multiselect__spinner {
+    background: var(--bs-body-bg);
+}
+
+[data-bs-theme="dark"] .multiselect__spinner::before,
+[data-bs-theme="dark"] .multiselect__spinner::after {
+    border-color: var(--bs-primary) transparent transparent;
+}
+
+[data-bs-theme="dark"] .multiselect--disabled {
+    background: var(--bs-secondary-bg);
+}
+
+[data-bs-theme="dark"] .multiselect__input,
+[data-bs-theme="dark"] .multiselect__single {
+    background: var(--bs-body-bg) !important;
+    color: var(--bs-body-color);
+    border-color: transparent;
+}
+
+[data-bs-theme="dark"] .multiselect__input::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .multiselect__input:hover,
+[data-bs-theme="dark"] .multiselect__single:hover {
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .multiselect__input:focus,
+[data-bs-theme="dark"] .multiselect__single:focus {
+    border-color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .btn-group .multiselect__tags,
+[data-bs-theme="dark"] .multiselect__tags {
+    border-color: var(--bs-border-color) !important;
+    background: var(--bs-body-bg) !important;
+}
+
+[data-bs-theme="dark"] .multiselect__tag {
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__tag-icon::after {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-bs-theme="dark"] .multiselect__tag-icon:focus::after,
+[data-bs-theme="dark"] .multiselect__tag-icon:hover::after {
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__current {
+    border-color: var(--bs-border-color);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .multiselect__select::before {
+    border-color: var(--bs-secondary-color) transparent transparent transparent;
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .multiselect__placeholder {
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .multiselect__content-wrapper {
+    background: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .multiselect--above .multiselect__content-wrapper {
+    border-top-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .multiselect__option {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .multiselect__option--highlight {
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__option--highlight::after {
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__option--selected {
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .multiselect__option--selected::after {
+    color: var(--bs-secondary-color);
+    background: inherit;
+}
+
+[data-bs-theme="dark"] .multiselect__option--selected.multiselect__option--highlight {
+    background: var(--bs-danger);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__option--selected.multiselect__option--highlight::after {
+    background: var(--bs-danger);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect--disabled .multiselect__current,
+[data-bs-theme="dark"] .multiselect--disabled .multiselect__select {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .multiselect__option--disabled {
+    background: var(--bs-secondary-bg) !important;
+    color: var(--bs-secondary-color) !important;
+}
+
+[data-bs-theme="dark"] .multiselect__option--group {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .multiselect__option--group.multiselect__option--highlight {
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__option--group.multiselect__option--highlight::after {
+    background: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .multiselect__option--disabled.multiselect__option--highlight {
+    background: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .multiselect__option--group-selected.multiselect__option--highlight {
+    background: var(--bs-danger);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .multiselect__option--group-selected.multiselect__option--highlight::after {
+    background: var(--bs-danger);
+    color: #fff;
+}
+
+/* Strong/text-success nos títulos dos charts */
+[data-bs-theme="dark"] .text-success {
+    color: var(--bs-success-text-emphasis) !important;
 }
