@@ -140,35 +140,37 @@
         Restam {{ Extrato.filter(i => !i.IdCategoria).length }} item(s) para classificar
       </div>
 
-      <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
-        <MultselectForm
-            :options="CategoriaLista"
-            v-model="CategoriaFiltroExtratoSel"
-            :internalSearch="true"
-            :searchable="true"
-            label="CategoriaNome"
-            placeholder="Todas as categorias"
-            showCategoryIcon
-            class="flex-grow-1"
-            style="min-width: 200px;"
-        />
-        <input type="text"
-               class="form-control"
-               id="pesquisaCategoria"
-               v-model="pesquisaExtrato"
-               placeholder="Filtrar extrato"
-               style="min-width: 240px; max-width: 504px;">
-        <button type="button"
-                class="btn btn-sm btn-outline-secondary"
-                :disabled="!temFiltroExtrato"
-                @click="limparFiltrosExtrato"
-                title="Limpar filtros da tabela">
-          <b-icon-x-circle class="icon"/>
-          Limpar filtros
-        </button>
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-auto">
+          <MultselectForm
+              :options="CategoriaLista"
+              v-model="CategoriaFiltroExtratoSel"
+              :internalSearch="true"
+              :searchable="true"
+              label="CategoriaNome"
+              placeholder="Todas as categorias"
+              showCategoryIcon
+              style="min-width: 200px;"
+          />
+        </div>
+        <div class="col-auto flex-grow-1" style="min-width: 200px;">
+          <input type="text"
+                 class="form-control form-control-sm"
+                 id="pesquisaCategoria"
+                 v-model="pesquisaExtrato"
+                 placeholder="Filtrar extrato">
+        </div>
+        <div class="col-auto">
+          <button type="button"
+                  class="btn btn-md btn-outline-secondary"
+                  :disabled="!temFiltroExtrato"
+                  @click="limparFiltrosExtrato"
+                  title="Limpar filtros da tabela">
+            <b-icon-x-circle class="icon"/>
+            Limpar filtros
+          </button>
+        </div>
       </div>
-
-      <br/>
 
       <table class="table-financeiro w-100">
         <tbody>

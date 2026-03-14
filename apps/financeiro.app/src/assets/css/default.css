@@ -101,6 +101,7 @@ label.form-control-label {
 
 input.form-control {
     border-radius: 2px;
+    height: 42px;
 }
 
 .offcanvas-body {
