@@ -91,6 +91,7 @@
                 :searchable="true"
                 label="CategoriaNome"
                 placeholder=""
+                showCategoryIcon
             />
           </div>
 
@@ -139,25 +140,49 @@
         Restam {{ Extrato.filter(i => !i.IdCategoria).length }} item(s) para classificar
       </div>
 
-      <input type="text" class="form-control" id="pesquisaCategoria"
-             v-model="pesquisaExtrato"
-             placeholder="Filtrar extrato">
+      <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
+        <MultselectForm
+            :options="CategoriaLista"
+            v-model="CategoriaFiltroExtratoSel"
+            :internalSearch="true"
+            :searchable="true"
+            label="CategoriaNome"
+            placeholder="Todas as categorias"
+            showCategoryIcon
+            class="flex-grow-1"
+            style="min-width: 200px;"
+        />
+        <input type="text"
+               class="form-control"
+               id="pesquisaCategoria"
+               v-model="pesquisaExtrato"
+               placeholder="Filtrar extrato"
+               style="min-width: 240px; max-width: 504px;">
+        <button type="button"
+                class="btn btn-sm btn-outline-secondary"
+                :disabled="!temFiltroExtrato"
+                @click="limparFiltrosExtrato"
+                title="Limpar filtros da tabela">
+          <b-icon-x-circle class="icon"/>
+          Limpar filtros
+        </button>
+      </div>
 
-      <table class="table-financeiro">
+      <br/>
+
+      <table class="table-financeiro w-100">
         <tbody>
         <tr
-            v-for="(item, index) in ((pesquisaExtrato) ? Extrato.filter(i =>
-                normalizarTexto(i.CategoriaNome + ' ' + i.Descricao).includes(normalizarTexto(pesquisaExtrato)) )
-                : Extrato)"
+            v-for="(item, index) in ExtratoFiltrado"
             :key="index"
             data-bs-toggle="modal"
             data-bs-target="#modalExtrato"
-            @click="abrirModalExtrato(item, index)">
-          <td :class="`item-extrato-data ${(!Extrato[index - 1] || (item.DataDisplay != Extrato[index - 1].DataDisplay)) ? '' : 'item-extrato-data-repet'}`">
+            @click="abrirModalExtrato(item, indiceExtrato(item))">
+          <td :class="`item-extrato-data ${(!ExtratoFiltrado[index - 1] || (item.DataDisplay != ExtratoFiltrado[index - 1].DataDisplay)) ? '' : 'item-extrato-data-repet'}`">
             <span>{{ item.DiaDisplay }}</span>
             <span>{{ item.MesDisplay }}</span>
           </td>
-          <td>
+          <td style="width: 50px;">
             <div class="item-extrato-icon" :title="item.CategoriaNome">
               <IconeCategoria :icon="item.IconTag"
                               :color="item.IconColor"
@@ -165,7 +190,7 @@
             </div>
           </td>
           <td>
-            <p class="m-0 small" :style="`color: ${item.IconColor}`">{{ item.CategoriaNome }}</p>
+            <p class="m-0 small" :style="`width: 50px; color: ${item.IconColor}`">{{ item.CategoriaNome }}</p>
             <p class="m-0 small" v-if="item.DescricaoPersonalizada">
               <b-icon-pencil-square class="icon"/>
               {{ item.DescricaoPersonalizada }}
@@ -220,6 +245,8 @@ export default {
       CategoriaLista: [],
       CategoriaSel: null,
       CategoriaFiltroSel: null,
+      /** Filtro de categoria para a tabela de extrato */
+      CategoriaFiltroExtratoSel: null,
 
       ChartCategoriasMes: null,
       QtdMeses_ChartCategoria: 6,
@@ -280,6 +307,25 @@ export default {
     }
   },
   computed: {
+    /** Extrato filtrado por pesquisa (texto) e por categoria selecionada */
+    ExtratoFiltrado() {
+      let lista = this.Extrato
+      if (this.pesquisaExtrato) {
+        const termo = this.normalizarTexto(this.pesquisaExtrato)
+        lista = lista.filter(i =>
+          this.normalizarTexto(i.CategoriaNome + ' ' + i.Descricao).includes(termo)
+        )
+      }
+      if (this.CategoriaFiltroExtratoSel && this.CategoriaFiltroExtratoSel.Id != null) {
+        lista = lista.filter(i => i.IdCategoria === this.CategoriaFiltroExtratoSel.Id)
+      }
+      return lista
+    },
+    /** Indica se há algum filtro ativo na tabela de extrato */
+    temFiltroExtrato() {
+      return (this.CategoriaFiltroExtratoSel != null && this.CategoriaFiltroExtratoSel.Id != null) ||
+        (this.pesquisaExtrato != null && this.pesquisaExtrato.trim() !== '')
+    },
     chartBarraInvertidaOptions() {
       const ocultar = this.ocultarValores
       return {
@@ -374,6 +420,13 @@ export default {
         Helper.messageExceptionHandler(e)
       }
 
+    },
+    limparFiltrosExtrato() {
+      this.CategoriaFiltroExtratoSel = null
+      this.pesquisaExtrato = ''
+    },
+    indiceExtrato(item) {
+      return this.Extrato.indexOf(item)
     },
     async abrirModalExtrato(item, index) {
 

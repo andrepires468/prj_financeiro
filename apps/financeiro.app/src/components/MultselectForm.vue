@@ -8,7 +8,7 @@
     deselectLabel="Remover"
 
     :options="options"
-    :v-model="model"
+    :modelValue="modelValue"
     :label="label"
     :placeholder="placeholder"
     :internalSearch="internalSearch"
@@ -17,9 +17,36 @@
     :loading="loading"
     :limit="limit"
     :disabled="disabled"
-    @select="change"
+    @select="onSelect"
+    @update:modelValue="$emit('update:modelValue', $event)"
 
   >
+    <template v-if="showCategoryIcon" #option="{ option }">
+      <div class="multiselect__option multiselect__option--category">
+        <IconeCategoria
+          v-if="option.IconTag"
+          :icon="option.IconTag"
+          :color="option.IconColor || '#666'"
+          :width="20"
+          :height="20"
+          class="me-2 float-left"
+        />
+        <span :style="option.IconColor ? { color: option.IconColor } : null">{{ getOptionLabel(option) }}</span>
+      </div>
+    </template>
+    <template v-if="showCategoryIcon" #singleLabel="{ option }">
+      <div class="multiselect__single-label multiselect__single-label--category d-flex align-items-center">
+        <IconeCategoria
+          v-if="option && option.IconTag"
+          :icon="option.IconTag"
+          :color="option.IconColor || '#666'"
+          :width="18"
+          :height="18"
+          class="me-2"
+        />
+        <span :style="option && option.IconColor ? { color: option.IconColor } : null">{{ option ? getOptionLabel(option) : '' }}</span>
+      </div>
+    </template>
     <slot></slot>
     <template v-slot:noOptions>Nenhuma opção listada</template>
     <template v-slot:noResult>Nenhum resultado, consider alterar a pesquisa</template>
@@ -31,18 +58,23 @@
 
 import 'vue-multiselect/dist/vue-multiselect.css';
 import Multiselect from 'vue-multiselect'
+import IconeCategoria from '@/components/IconeCategoria.vue'
 
 export default {
   name: "MultselectForm",
-  components: {Multiselect},
+  components: { Multiselect, IconeCategoria },
   emits: [
     "change",
+    "update:modelValue",
   ],
   props: {
     disabled: false,
     options: null,
-    model: null,
-    label: '',
+    modelValue: null,
+    label: {
+      type: String,
+      default: '',
+    },
     placeholder: '',
     internalSearch: {
       type: Boolean,
@@ -57,9 +89,19 @@ export default {
       value: false
     },
     limit: null,
+    /** Quando true, exibe ícone da categoria (opções devem ter IconTag e IconColor, ex.: CategoriaLista) */
+    showCategoryIcon: {
+      type: Boolean,
+      default: false,
+    },
   },
-  methods:{
-    change(item){
+  methods: {
+    getOptionLabel(option) {
+      if (!option || typeof option !== 'object') return option
+      return option[this.label] ?? option.CategoriaNome ?? ''
+    },
+    onSelect(item) {
+      this.$emit('update:modelValue', item)
       this.$emit('change', item)
     }
   }
