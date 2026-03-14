@@ -155,6 +155,7 @@ class FinanceiroService extends Service
       ->where('FechamentoCategoria.IdBancoExtrato', '=', $idBancoExtrato)
       ->where('FechamentoCategoria.DataBase', '=', $dataBase)
       ->where('FechamentoCategoria.ValorFechado', '<', 0)
+      ->where('Categoria.IconTag', '!=', 'aplicacao')
       ->orderByRaw('FechamentoCategoria.ValorFechado, Categoria.CategoriaNome')
       ->get();
 

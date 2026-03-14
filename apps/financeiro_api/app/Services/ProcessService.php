@@ -392,10 +392,16 @@ PROMPT;
     }
 
     // 6. Parsear e validar resposta (extrair JSON mesmo com markdown ou texto em volta)
-    $sugestoes = $this->parseGeminiCategorizacaoResponse($jsonText);
+    $parseResult = $this->parseGeminiCategorizacaoResponse($jsonText);
+    $sugestoes = $parseResult['data'] ?? null;
+    $parseError = $parseResult['error'] ?? null;
     if ($sugestoes === null) {
       $preview = strlen($jsonText) > 200 ? substr($jsonText, 0, 200) . '...' : $jsonText;
-      throw new \Exception('Resposta da IA inválida. Tente novamente. Resposta recebida: ' . $preview);
+      $msg = 'Resposta da IA inválida. Tente novamente. Resposta recebida: ' . $preview;
+      if ($parseError !== null && $parseError !== '') {
+        $msg .= ' (erro JSON: ' . $parseError . ')';
+      }
+      throw new \Exception($msg);
     }
 
     $idsCategoriaSet = array_flip($idsCategoria);
@@ -428,9 +434,9 @@ PROMPT;
 
   /**
    * Extrai e decodifica o array JSON da resposta da Gemini (tolera markdown, texto em volta e JSON truncado).
-   * Retorna array de sugestões ou null se inválido.
+   * Retorna ['data' => array de sugestões, 'error' => null] ou ['data' => null, 'error' => mensagem].
    */
-  private function parseGeminiCategorizacaoResponse(string $jsonText): ?array
+  private function parseGeminiCategorizacaoResponse(string $jsonText): array
   {
     $jsonText = trim($jsonText);
     // Remove blocos markdown ```json ... ``` ou ``` ... ```
@@ -440,27 +446,109 @@ PROMPT;
 
     $start = strpos($jsonText, '[');
     if ($start === false) {
-      return null;
+      return ['data' => null, 'error' => 'nenhum array encontrado na resposta'];
     }
 
-    $end = strrpos($jsonText, ']');
-    if ($end !== false && $end > $start) {
-      $jsonText = substr($jsonText, $start, $end - $start + 1);
-    } else {
-      // Resposta truncada (sem ] no final): usa do [ até o fim e tenta fechar o array
-      $jsonText = substr($jsonText, $start);
-      $jsonText = rtrim($jsonText);
-      if (substr($jsonText, -1) === ',') {
-        $jsonText = substr($jsonText, 0, -1);
+    // Extrai apenas o primeiro array completo (contando colchetes), evita [ {...} ],[ {...} ] inválido
+    $slice = $this->extractFirstJsonArray($jsonText, $start);
+    if ($slice === null) {
+      // Resposta truncada: do [ até o fim, tenta fechar e corrigir último objeto incompleto
+      $slice = substr($jsonText, $start);
+      $slice = rtrim($slice);
+      if (substr($slice, -1) === ',') {
+        $slice = substr($slice, 0, -1);
       }
-      $jsonText .= ']';
+      // Remove último objeto incompleto (ex: ,{"Id":182,"IdCategoria":)
+      $slice = $this->trimTrailingIncompleteObject($slice);
+      $slice .= ']';
     }
 
-    $sugestoes = json_decode($jsonText, true);
-    if (json_last_error() !== JSON_ERROR_NONE || !is_array($sugestoes)) {
-      return null;
+    $sugestoes = json_decode($slice, true);
+    $err = json_last_error();
+    if ($err !== JSON_ERROR_NONE) {
+      return ['data' => null, 'error' => json_last_error_msg()];
     }
-    return $sugestoes;
+    if (!is_array($sugestoes)) {
+      return ['data' => null, 'error' => 'resposta não é um array'];
+    }
+    return ['data' => $sugestoes, 'error' => null];
+  }
+
+  /**
+   * Encontra o trecho do primeiro array JSON completo a partir de $start ([ já encontrado).
+   * Retorna a substring incluindo [ e ] ou null se não houver ] de fechamento.
+   */
+  private function extractFirstJsonArray(string $jsonText, int $start): ?string
+  {
+    $len = strlen($jsonText);
+    $depth = 1;
+    $i = $start + 1;
+    $inString = false;
+    $escape = false;
+    $quote = '';
+
+    while ($i < $len) {
+      $c = $jsonText[$i];
+      if ($escape) {
+        $escape = false;
+        $i++;
+        continue;
+      }
+      if ($c === '\\' && $inString) {
+        $escape = true;
+        $i++;
+        continue;
+      }
+      if (($c === '"' || $c === "'") && !$inString) {
+        $inString = true;
+        $quote = $c;
+        $i++;
+        continue;
+      }
+      if ($c === $quote && $inString) {
+        $inString = false;
+        $i++;
+        continue;
+      }
+      if ($inString) {
+        $i++;
+        continue;
+      }
+      if ($c === '[') {
+        $depth++;
+      } elseif ($c === ']') {
+        $depth--;
+        if ($depth === 0) {
+          return substr($jsonText, $start, $i - $start + 1);
+        }
+      }
+      $i++;
+    }
+    return null;
+  }
+
+  /**
+   * Remove objeto incompleto no final (ex: ,{"Id":123,"IdCategoria": sem fechar }).
+   */
+  private function trimTrailingIncompleteObject(string $json): string
+  {
+    $json = rtrim($json);
+    if (substr($json, -1) === ',') {
+      $json = substr($json, 0, -1);
+    }
+    // Se termina com }, o último objeto está completo
+    if (substr($json, -2) === '},') {
+      return substr($json, 0, -1);
+    }
+    if (substr($json, -1) === '}') {
+      return $json;
+    }
+    // Último objeto incompleto: cortar no último "}," e manter só o }
+    $lastComplete = strrpos($json, '},');
+    if ($lastComplete !== false) {
+      return substr($json, 0, $lastComplete + 1);
+    }
+    return $json;
   }
 
 }
