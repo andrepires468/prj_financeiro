@@ -1,8 +1,21 @@
+FROM node:20-alpine as dev-stage
+
+WORKDIR /app
+
+COPY package.json yarn.lock ./
+RUN yarn install
+
+EXPOSE 8080
+
+CMD ["sh", "-c", "yarn install && exec yarn dev"]
+
 # Estágio de build
 FROM node:20-alpine as build-stage
 
-ARG VUE_APP_API_BASE_URL
-ARG VUE_APP_API_VERSION
+ARG VITE_API_BASE_URL
+ARG VITE_API_VERSION
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_VERSION=$VITE_API_VERSION
 
 WORKDIR /app
 

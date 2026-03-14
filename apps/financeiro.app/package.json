@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vue-cli-service serve --mode dev",
-    "build": "vue-cli-service build --mode production"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
@@ -23,14 +24,11 @@
     "vue-color-input": "^1.0.8",
     "vue-multiselect": "^3.0.0-beta.3",
     "vue-router": "^4.3.0",
-    "vue-sweetalert2": "^5.0.5",
-    "vue3-select2-component": "^0.1.7"
+    "vue-sweetalert2": "^5.0.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.3",
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
-    "webpack": "^5.91.0"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^5.4.11"
   },
   "browserslist": [
     "> 1%",

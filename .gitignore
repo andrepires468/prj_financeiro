@@ -1,3 +1,6 @@
 node_modules/
 .idea/
-backups/*.sql.gz
+backups/
+
+# Build output do app
+apps/financeiro.app/dist/

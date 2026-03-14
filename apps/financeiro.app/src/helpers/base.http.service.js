@@ -1,8 +1,8 @@
 import helperService from './helper.service'
 import APIError from '../models/api/api.error'
 
-const BASE_URL = process.env.VUE_APP_API_BASE_URL
-const API_VERSION = process.env.VUE_APP_API_VERSION
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_VERSION = import.meta.env.VITE_API_VERSION
 
 export default {
     executeAPI: async (url, method, body, headers) => {

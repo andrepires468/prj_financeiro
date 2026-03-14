@@ -171,7 +171,11 @@ class FinanceiroService extends Service
 
       array_push($result['labels'], $item->CategoriaNome);
 
-      array_push($result['datasets'][0]['backgroundColor'], $item->IconColor);
+      $backgroundColor = $item->IconColor;
+      if ($backgroundColor && strpos($backgroundColor, '#') !== 0) {
+        $backgroundColor = '#' . $backgroundColor;
+      }
+      array_push($result['datasets'][0]['backgroundColor'], $backgroundColor);
 
       array_push($result['datasets'][0]['data'], ((float)$item->ValorCategoria < 0) ? (float)$item->ValorCategoria * -1 :(float) $item->ValorCategoria);
 
@@ -231,9 +235,13 @@ class FinanceiroService extends Service
       array_push($result['labels'], Functions::getMesNome($item['codigo_mes']));
     }
 
+    $backgroundColor = $categoria->IconColor;
+    if ($backgroundColor && strpos($backgroundColor, '#') !== 0) {
+      $backgroundColor = '#' . $backgroundColor;
+    }
     $result['datasets'][] = [
       'label' => $categoria->CategoriaNome,
-      'backgroundColor' => $categoria->IconColor,
+      'backgroundColor' => $backgroundColor,
       'data' => []
     ];
 

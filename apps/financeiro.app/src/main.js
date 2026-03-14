@@ -1,8 +1,16 @@
+const showAppError = (msg) => {
+  const el = document.getElementById('app')
+  if (el && !el.querySelector('.app-error')) {
+    el.innerHTML = `<div class="app-error p-4" style="color:#c00;font-family:monospace;white-space:pre-wrap;">${msg}\n\nAbra o Console (F12) para mais detalhes.</div>`
+  }
+}
+window.addEventListener('error', (e) => { showAppError('Erro: ' + (e.message || e)); return false })
+window.addEventListener('unhandledrejection', (e) => { showAppError('Erro ao carregar: ' + (e.reason?.message || e.reason)); return false })
+
 import { createApp } from 'vue'
 import App from './App.vue'
 
 import { BootstrapIconsPlugin } from "bootstrap-icons-vue";
-import VueSelect from 'vue3-select2-component'
 import VueSweetalert2 from 'vue-sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -76,7 +84,6 @@ window.addEventListener("online", (event) => {
 const app = createApp(App)
 
 app.directive("maska", vMaska)
-app.component('vue-select', VueSelect)
 app.component('DataTable', DataTable)
 app.component('Pagination', Pagination)
 app.component('DatePicker', DatePicker)
@@ -86,7 +93,16 @@ app.use(VueSweetalert2, SwalOptions)
 app.use(BootstrapIconsPlugin) // https://www.npmjs.com/package/bootstrap-icons-vue
 app.use(ColorInput)
 app.use(router)
-    .mount('#app')
+
+app.config.errorHandler = (err, instance, info) => {
+  console.error('[Vue]', info, err)
+  const el = document.getElementById('app')
+  if (el && !el.querySelector('.app-error')) {
+    el.innerHTML = `<div class="app-error p-4" style="color:#c00;font-family:monospace;white-space:pre-wrap;">Erro: ${err?.message || err}\n\nVerifique o Console (F12) para mais detalhes.</div>`
+  }
+}
+
+app.mount('#app')
 
 
 
