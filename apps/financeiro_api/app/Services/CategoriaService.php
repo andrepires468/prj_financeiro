@@ -55,7 +55,7 @@ class CategoriaService extends Service
     $categoria = Categoria::select()->where('Id', '=', $request->Id)->first();
 
     $categoria->CategoriaNome = $request->CategoriaNome;
-    $categoria->IconColor = $request->IconColor;
+    $categoria->IconColor = ltrim($request->IconColor, '#');
     $categoria->save();
 
   }
