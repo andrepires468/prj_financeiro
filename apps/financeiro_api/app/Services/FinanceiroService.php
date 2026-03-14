@@ -263,6 +263,7 @@ class FinanceiroService extends Service
 
     $idUsuario = $this->idUsuario;
     $idBancoExtrato = $this->idBancoExtrato;
+    $idCategoriaAplicacao = Categoria::where('IconTag', 'aplicacao')->value('Id');
     $datasBase = Functions::ultimasDatadaBase($request->qtdMeses);
 
     // inverte a lista de datas
@@ -292,6 +293,7 @@ class FinanceiroService extends Service
           where
           Extrato.IdBancoExtrato = ?
           and Extrato.Valor < 0
+          and (Extrato.IdCategoria <> ? or Extrato.IdCategoria is null)
           and Extrato.Data between ? and ?
         ) Saida",
         [
@@ -301,6 +303,7 @@ class FinanceiroService extends Service
           $data['data_inicio_mes'] . ' 00:00:00',
           $data['data_fim_mes'] . ' 23:59:59',
           $idBancoExtrato,
+          $idCategoriaAplicacao,
           $data['data_inicio_mes'] . ' 00:00:00',
           $data['data_fim_mes'] . ' 23:59:59'
         ]
