@@ -50,7 +50,7 @@ A categorização automática usa a **API Gemini** (Google) para sugerir uma cat
 - **Variáveis de ambiente** (`.env` da API):
   - `GEMINI_API_KEY`: obrigatória para a categorização com IA. Sem ela, o `GeminiService` lança exceção ao ser instanciado/usado.
   - `GEMINI_MODEL`: opcional; padrão `gemini-2.5-flash`. Pode ser alterado em caso de cota (ex.: `gemini-1.5-flash`).
-- Obtenção da chave: [Google AI Studio](https://aistudio.google.com/apikey). Limites: [Gemini API rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
+- Obtenção da chave: [Google AI Studio](https://aistudio.google.com/apikey). Limites: [Gemini API rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). Consultar consumo: [Uso da API (últimos 28 dias)](https://aistudio.google.com/u/1/usage?project=gen-lang-client-0143854051&timeRange=last-28-days).
 
 ### 3.3 Fluxo no backend (`ProcessService::CategorizarExtrato`)
 
