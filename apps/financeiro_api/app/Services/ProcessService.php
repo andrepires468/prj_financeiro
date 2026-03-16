@@ -84,74 +84,22 @@ class ProcessService extends Service
       throw new \Exception('Erro IMAP: ' . $errorMsg);
     }
 
-    // Definir critérios de pesquisa (por exemplo, o endereço do remetente)
-    $search_criteria = 'UNSEEN FROM "@nubank.com.br" SUBJECT "Extrato da sua conta do Nubank"';
-    $mails = imap_search($mailbox, $search_criteria);
+    try {
+      $resultadoDebito = $this->importarDebito($mailbox, $idBancoExtrato);
+      $emails += $resultadoDebito['emails'];
+      $listados += $resultadoDebito['listados'];
+      $incluidos += $resultadoDebito['incluidos'];
 
-    if($mails) {
+      $resultadoCredito = $this->importarCredito($mailbox, $idBancoExtrato);
+      $emails += $resultadoCredito['emails'];
+      $listados += $resultadoCredito['listados'];
+      $incluidos += $resultadoCredito['incluidos'];
 
-      // Iterar sobre os emails encontrados
-      foreach($mails as $mail_id) {
-
-        // Baixar todas as partes do email
-        $structure = imap_fetchstructure($mailbox, $mail_id);
-
-        // Iterar sobre as partes do email
-        foreach($structure->parts as $part_number => $part) {
-
-          // Verificar se é um anexo e se é do tipo CSV
-          if($part->ifdparameters && $part->dparameters[0]->attribute == 'FILENAME' && pathinfo($part->dparameters[0]->value)['extension'] == 'csv') {
-
-            $emails++;
-
-            // Baixar o anexo
-            $attachment = imap_fetchbody($mailbox, $mail_id, $part_number + 1);
-
-            $decodedCsv = base64_decode($attachment);
-
-            // Decodificar o CSV para uma matriz
-            $rows = array_map('str_getcsv', explode("\n", $decodedCsv));
-
-            // Remove o cabeçalho (assumindo que a primeira linha do CSV é o cabeçalho)
-            array_shift($rows);
-
-            $listados = count($rows);
-
-            foreach($rows as $row) {
-
-              if(count($row) < 4)
-                continue;
-
-              $extrato = Extrato::where("Identificador", '=', $row[2])->first();
-              if($extrato)
-                continue;
-
-              $extrato = new Extrato();
-              $extrato->Data = functions::formatDate($row[0]);
-              $extrato->Valor = $row[1];
-              $extrato->Identificador = $row[2];
-              $extrato->Descricao = $row[3];
-              $extrato->IdTipoExtrato = 1; // debito
-              $extrato->IdBancoExtrato = $idBancoExtrato; // nubank
-              $extrato->save();
-
-              $incluidos++;
-
-            }
-
-            // Marcar o email como lido para evitar que seja baixado novamente
-            imap_setflag_full($mailbox, $mail_id, "\\Seen");
-
-          }// if csv
-
-        }// foreach attachments
-
-      } // foreach emails
-
-//      if($incluidos > 0)
-      $this->Fechamento();
-
-    } // if emails
+      if($incluidos > 0)
+        $this->Fechamento();
+    } finally {
+      imap_close($mailbox);
+    }
 
     return [
       'emails_lidos' => $emails,
@@ -159,6 +107,138 @@ class ProcessService extends Service
       'itens_incluidos' => $incluidos
     ];
 
+  }
+
+  /**
+   * Importa lançamentos de débito a partir de emails (ex.: extrato Nubank conta).
+   * Retorna contadores para emails processados, linhas listadas e itens incluídos.
+   */
+  private function importarDebito($mailbox, $idBancoExtrato)
+  {
+    $emails = 0;
+    $listados = 0;
+    $incluidos = 0;
+
+    $search_criteria = 'UNSEEN FROM "@nubank.com.br" SUBJECT "Extrato da sua conta do Nubank"';
+    $mails = imap_search($mailbox, $search_criteria);
+
+    if(!$mails)
+      return ['emails' => 0, 'listados' => 0, 'incluidos' => 0];
+
+    foreach($mails as $mail_id) {
+
+      $structure = imap_fetchstructure($mailbox, $mail_id);
+
+      foreach($structure->parts as $part_number => $part) {
+
+        if($part->ifdparameters && $part->dparameters[0]->attribute == 'FILENAME' && pathinfo($part->dparameters[0]->value)['extension'] == 'csv') {
+
+          $emails++;
+
+          $attachment = imap_fetchbody($mailbox, $mail_id, $part_number + 1);
+          $decodedCsv = base64_decode($attachment);
+          $rows = array_map('str_getcsv', explode("\n", $decodedCsv));
+          array_shift($rows);
+
+          $listados = count($rows);
+
+          foreach($rows as $row) {
+
+            if(count($row) < 4)
+              continue;
+
+            $extrato = Extrato::where("Identificador", '=', $row[2])->first();
+            if($extrato)
+              continue;
+
+            $extrato = new Extrato();
+            $extrato->Data = Functions::formatDate($row[0]);
+            $extrato->Valor = $row[1];
+            $extrato->Identificador = $row[2];
+            $extrato->Descricao = $row[3];
+            $extrato->IdTipoExtrato = 1; // débito
+            $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->save();
+
+            $incluidos++;
+          }
+
+          imap_setflag_full($mailbox, $mail_id, "\\Seen");
+        }
+      }
+    }
+
+    return ['emails' => $emails, 'listados' => $listados, 'incluidos' => $incluidos];
+  }
+
+  /**
+   * Importa lançamentos de crédito (fatura do cartão) a partir de emails (ex.: extrato fatura Nubank).
+   * CSV: date, title, amount. Retorna contadores para emails processados, linhas listadas e itens incluídos.
+   */
+  private function importarCredito($mailbox, $idBancoExtrato)
+  {
+    $emails = 0;
+    $listados = 0;
+    $incluidos = 0;
+
+    $search_criteria = 'UNSEEN FROM "@nubank.com.br" SUBJECT "Extrato da fatura"';
+    $mails = imap_search($mailbox, $search_criteria);
+
+    if(!$mails)
+      return ['emails' => 0, 'listados' => 0, 'incluidos' => 0];
+
+    foreach($mails as $mail_id) {
+
+      $structure = imap_fetchstructure($mailbox, $mail_id);
+
+      foreach($structure->parts as $part_number => $part) {
+
+        if($part->ifdparameters && $part->dparameters[0]->attribute == 'FILENAME' && pathinfo($part->dparameters[0]->value)['extension'] == 'csv') {
+
+          $emails++;
+
+          $attachment = imap_fetchbody($mailbox, $mail_id, $part_number + 1);
+          $decodedCsv = base64_decode($attachment);
+          $rows = array_map('str_getcsv', explode("\n", $decodedCsv));
+          array_shift($rows);
+
+          $listados = count($rows);
+
+          foreach($rows as $row) {
+
+            if(count($row) < 3)
+              continue;
+
+            if(strtolower($row[1]) === 'pagamento recebido')
+              continue;
+
+            // Gerar identificador único para evitar duplicados: hash dos campos relevantes (ex.: date, title, amount)
+            $identificador = 'credito-' . md5($row[0] . '|' . $row[1] . '|' . $row[2]);
+            $extrato = Extrato::where('Identificador', '=', $identificador)->first();
+            if($extrato)
+              continue;
+
+            // CSV crédito: date em Y-m-d (ex.: 2026-03-01)
+            $dataCredito = trim($row[0]);
+            $dt = \DateTime::createFromFormat('Y-m-d', $dataCredito);
+            $extrato = new Extrato();
+            $extrato->Data = $dt ? $dt->format('Y-m-d') : date('Y-m-d', strtotime($dataCredito));
+            $extrato->Valor = $row[2] * -1; //
+            $extrato->Identificador = $identificador;
+            $extrato->Descricao = mb_substr($row[1], 0, 420); // title
+            $extrato->IdTipoExtrato = 2; // crédito
+            $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->save();
+
+            $incluidos++;
+          }
+
+          imap_setflag_full($mailbox, $mail_id, "\\Seen");
+        }
+      }
+    }
+
+    return ['emails' => $emails, 'listados' => $listados, 'incluidos' => $incluidos];
   }
 
   public function Fechamento()
@@ -305,14 +385,14 @@ class ProcessService extends Service
    */
   public function CategorizarExtrato(Request $request)
   {
-    if (!$request->mes || $request->mes === '')
+    if(!$request->mes || $request->mes === '')
       throw new \Exception('mes não passado');
 
-    if (!$request->ano || $request->ano === '')
+    if(!$request->ano || $request->ano === '')
       throw new \Exception('ano não passado');
 
-    $mes = (int) $request->mes;
-    $ano = (int) $request->ano;
+    $mes = (int)$request->mes;
+    $ano = (int)$request->ano;
 
     $idBancoExtrato = $this->idBancoExtrato;
 
@@ -321,7 +401,9 @@ class ProcessService extends Service
       ->orderBy('CategoriaNome')
       ->get();
 
-    $idsCategoria = $categorias->pluck('Id')->map(function ($id) { return (int) $id; })->all();
+    $idsCategoria = $categorias->pluck('Id')->map(function($id) {
+      return (int)$id;
+    })->all();
 
     // 2. Histórico: últimos 3 meses, já categorizados (Descricao, CategoriaNome), limit 300
     $datasBase = Functions::ultimasDatadaBase(3);
@@ -346,22 +428,24 @@ class ProcessService extends Service
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
       ->get();
 
-    if ($itensACategorizar->isEmpty()) {
+    if($itensACategorizar->isEmpty()) {
       return ['atualizados' => 0];
     }
 
-    $idsEnviados = $itensACategorizar->pluck('Id')->map(function ($id) { return (int) $id; })->all();
+    $idsEnviados = $itensACategorizar->pluck('Id')->map(function($id) {
+      return (int)$id;
+    })->all();
 
     // 4. Montar prompt
-    $linhasCategorias = $categorias->map(function ($c) {
+    $linhasCategorias = $categorias->map(function($c) {
       return $c->Id . ' - ' . $c->CategoriaNome;
     })->implode("\n");
 
-    $linhasHistorico = $historico->map(function ($r) {
+    $linhasHistorico = $historico->map(function($r) {
       return 'Descricao: ' . $r->Descricao . ' -> Categoria: ' . $r->CategoriaNome;
     })->implode("\n");
 
-    $linhasItens = $itensACategorizar->map(function ($r) {
+    $linhasItens = $itensACategorizar->map(function($r) {
       return 'Id: ' . $r->Id . ', Descricao: ' . $r->Descricao;
     })->implode("\n");
 
@@ -383,9 +467,9 @@ PROMPT;
     // 5. Chamar Gemini
     try {
       $jsonText = $this->geminiService->generateContent($prompt);
-    } catch (\Exception $e) {
+    } catch(\Exception $e) {
       $msg = $e->getMessage();
-      if ($msg === '') {
+      if($msg === '') {
         $msg = 'erro desconhecido (verifique GEMINI_API_KEY e logs)';
       }
       throw new \Exception('Falha ao categorizar com IA: ' . $msg);
@@ -395,10 +479,10 @@ PROMPT;
     $parseResult = $this->parseGeminiCategorizacaoResponse($jsonText);
     $sugestoes = $parseResult['data'] ?? null;
     $parseError = $parseResult['error'] ?? null;
-    if ($sugestoes === null) {
+    if($sugestoes === null) {
       $preview = strlen($jsonText) > 200 ? substr($jsonText, 0, 200) . '...' : $jsonText;
       $msg = 'Resposta da IA inválida. Tente novamente. Resposta recebida: ' . $preview;
-      if ($parseError !== null && $parseError !== '') {
+      if($parseError !== null && $parseError !== '') {
         $msg .= ' (erro JSON: ' . $parseError . ')';
       }
       throw new \Exception($msg);
@@ -407,17 +491,17 @@ PROMPT;
     $idsCategoriaSet = array_flip($idsCategoria);
     $atualizados = 0;
 
-    foreach ($sugestoes as $item) {
-      $id = isset($item['Id']) ? (int) $item['Id'] : (isset($item['id']) ? (int) $item['id'] : null);
-      $idCategoria = isset($item['IdCategoria']) ? (int) $item['IdCategoria'] : (isset($item['idCategoria']) ? (int) $item['idCategoria'] : null);
-      if ($id === null || $idCategoria === null) continue;
-      if (!in_array($id, $idsEnviados, true)) continue;
-      if (!isset($idsCategoriaSet[$idCategoria])) continue;
+    foreach($sugestoes as $item) {
+      $id = isset($item['Id']) ? (int)$item['Id'] : (isset($item['id']) ? (int)$item['id'] : null);
+      $idCategoria = isset($item['IdCategoria']) ? (int)$item['IdCategoria'] : (isset($item['idCategoria']) ? (int)$item['idCategoria'] : null);
+      if($id === null || $idCategoria === null) continue;
+      if(!in_array($id, $idsEnviados, true)) continue;
+      if(!isset($idsCategoriaSet[$idCategoria])) continue;
 
       $extrato = Extrato::where('Id', '=', $id)
         ->where('IdBancoExtrato', '=', $idBancoExtrato)
         ->first();
-      if (!$extrato) continue;
+      if(!$extrato) continue;
 
       $extrato->IdCategoria = $idCategoria;
       $extrato->save();
@@ -445,17 +529,17 @@ PROMPT;
     $jsonText = trim($jsonText);
 
     $start = strpos($jsonText, '[');
-    if ($start === false) {
+    if($start === false) {
       return ['data' => null, 'error' => 'nenhum array encontrado na resposta'];
     }
 
     // Extrai apenas o primeiro array completo (contando colchetes), evita [ {...} ],[ {...} ] inválido
     $slice = $this->extractFirstJsonArray($jsonText, $start);
-    if ($slice === null) {
+    if($slice === null) {
       // Resposta truncada: do [ até o fim, tenta fechar e corrigir último objeto incompleto
       $slice = substr($jsonText, $start);
       $slice = rtrim($slice);
-      if (substr($slice, -1) === ',') {
+      if(substr($slice, -1) === ',') {
         $slice = substr($slice, 0, -1);
       }
       // Remove último objeto incompleto (ex: ,{"Id":182,"IdCategoria":)
@@ -465,10 +549,10 @@ PROMPT;
 
     $sugestoes = json_decode($slice, true);
     $err = json_last_error();
-    if ($err !== JSON_ERROR_NONE) {
+    if($err !== JSON_ERROR_NONE) {
       return ['data' => null, 'error' => json_last_error_msg()];
     }
-    if (!is_array($sugestoes)) {
+    if(!is_array($sugestoes)) {
       return ['data' => null, 'error' => 'resposta não é um array'];
     }
     return ['data' => $sugestoes, 'error' => null];
@@ -487,38 +571,38 @@ PROMPT;
     $escape = false;
     $quote = '';
 
-    while ($i < $len) {
+    while($i < $len) {
       $c = $jsonText[$i];
-      if ($escape) {
+      if($escape) {
         $escape = false;
         $i++;
         continue;
       }
-      if ($c === '\\' && $inString) {
+      if($c === '\\' && $inString) {
         $escape = true;
         $i++;
         continue;
       }
-      if (($c === '"' || $c === "'") && !$inString) {
+      if(($c === '"' || $c === "'") && !$inString) {
         $inString = true;
         $quote = $c;
         $i++;
         continue;
       }
-      if ($c === $quote && $inString) {
+      if($c === $quote && $inString) {
         $inString = false;
         $i++;
         continue;
       }
-      if ($inString) {
+      if($inString) {
         $i++;
         continue;
       }
-      if ($c === '[') {
+      if($c === '[') {
         $depth++;
-      } elseif ($c === ']') {
+      } elseif($c === ']') {
         $depth--;
-        if ($depth === 0) {
+        if($depth === 0) {
           return substr($jsonText, $start, $i - $start + 1);
         }
       }
@@ -533,19 +617,19 @@ PROMPT;
   private function trimTrailingIncompleteObject(string $json): string
   {
     $json = rtrim($json);
-    if (substr($json, -1) === ',') {
+    if(substr($json, -1) === ',') {
       $json = substr($json, 0, -1);
     }
     // Se termina com }, o último objeto está completo
-    if (substr($json, -2) === '},') {
+    if(substr($json, -2) === '},') {
       return substr($json, 0, -1);
     }
-    if (substr($json, -1) === '}') {
+    if(substr($json, -1) === '}') {
       return $json;
     }
     // Último objeto incompleto: cortar no último "}," e manter só o }
     $lastComplete = strrpos($json, '},');
-    if ($lastComplete !== false) {
+    if($lastComplete !== false) {
       return substr($json, 0, $lastComplete + 1);
     }
     return $json;

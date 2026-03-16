@@ -7,26 +7,32 @@
 - **Consultar consumo da API Gemini**: [Uso / consumo (últimos 28 dias)](https://aistudio.google.com/u/1/usage?project=gen-lang-client-0143854051&timeRange=last-28-days).
 
 ### Construir as imagens
+
 ```
 docker-compose build
 ```
 
 ### Iniciar os containers em background
+
 ```
-docker-compose up -d
+docker-compose up -ddocker-compose up -d
 ```
 
 ### Verificar se os containers estão rodando
+
 ```
 docker-compose ps
 ```
 
 ### Para parar a aplicação:
+
 ```
 docker-compose down
 ```
 
 ### Para ver os logs:
+
 ```
 docker-compose logs -f
 ```
+
