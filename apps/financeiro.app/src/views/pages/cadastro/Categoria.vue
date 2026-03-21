@@ -9,6 +9,7 @@
     <tr>
       <th>Id</th>
       <th>Categoria Nome</th>
+      <th>Gráficos</th>
       <th colspan="2">Icone</th>
     </tr>
     </thead>
@@ -21,6 +22,14 @@
                style="background-color: transparent; border: none"
                v-model="categoria.CategoriaNome"
                @input="updateCategoria(categoria)"
+        >
+      </td>
+      <td style="width: 90px">
+        <input type="checkbox"
+               class="form-check-input"
+               v-model="categoria.ExibirGraficos"
+               @change="updateCategoria(categoria, true)"
+               title="Exibir no gráfico Categorias do mês"
         >
       </td>
       <td style="width: 40px">
@@ -68,18 +77,19 @@ export default {
     }
   },
   methods: {
-    async updateCategoria(item) {
+    async updateCategoria(item, imediato) {
 
       try {
 
         await clearTimeout(this.timeOut)
 
-        this.timeOut = setTimeout(async () => {
+        const salvar = async () => {
 
           const data = {
             Id: item.Id,
             CategoriaNome: item.CategoriaNome,
-            IconColor: item.IconColor
+            IconColor: item.IconColor,
+            ExibirGraficos: !!item.ExibirGraficos
           }
 
           const result = await categoriaService.updateCategoria(data)
@@ -88,7 +98,12 @@ export default {
 
           swalToast.fire('','categoria atualizada','success')
 
-        }, 2000);
+        }
+
+        if (imediato)
+          await salvar()
+        else
+          this.timeOut = setTimeout(salvar, 2000)
 
       } catch (e) {
         Helper.messageExceptionHandler(e)
@@ -106,6 +121,7 @@ export default {
       this.Categorias = result.Data.map(i => {
         return {
           ...i,
+          ExibirGraficos: i.ExibirGraficos !== false && i.ExibirGraficos !== 0 && i.ExibirGraficos !== '0'
         }
       });
 

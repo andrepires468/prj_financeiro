@@ -56,6 +56,8 @@ class CategoriaService extends Service
 
     $categoria->CategoriaNome = $request->CategoriaNome;
     $categoria->IconColor = ltrim($request->IconColor, '#');
+    if(array_key_exists('ExibirGraficos', $request->all()))
+      $categoria->ExibirGraficos = filter_var($request->ExibirGraficos, FILTER_VALIDATE_BOOLEAN);
     $categoria->save();
 
   }

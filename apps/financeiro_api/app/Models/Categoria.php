@@ -17,6 +17,12 @@ class Categoria extends Model
     'CategoriaNome' => 'required|string|max:200',
     'IconTag' => 'required|string|max:40',
     'IconColor' => 'required|string|max:6',
+    'ExibirGraficos' => 'boolean',
+  ];
+
+  protected $casts = [
+    'ExibirGraficos' => 'boolean',
   ];
 
 }
+

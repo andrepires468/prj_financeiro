@@ -340,6 +340,14 @@ export default {
       }
       return lista
     },
+    /**
+     * Linhas do extrato que entram nos totais do rodapé: mesmos filtros da tabela,
+     * excluindo itens cuja categoria tenha ExibirGraficos desmarcado (itens sem
+     * categoria continuam, alinhado ao gráfico Entradas x Saídas na API).
+     */
+    ExtratoFiltradoParaTotais() {
+      return this.ExtratoFiltrado.filter(i => this.extratoItemContaExibirGraficos(i))
+    },
     /** Indica se há algum filtro ativo na tabela de extrato */
     temFiltroExtrato() {
       return (this.TipoFiltroExtratoSel != null && this.TipoFiltroExtratoSel.Id != null) ||
@@ -347,13 +355,13 @@ export default {
         (this.pesquisaExtrato != null && this.pesquisaExtrato.trim() !== '')
     },
     extratoFiltradoSomaEntradas() {
-      return this.ExtratoFiltrado.reduce((acc, i) => {
+      return this.ExtratoFiltradoParaTotais.reduce((acc, i) => {
         const v = Number(i.ValorNumerico ?? 0)
         return acc + (v > 0 ? v : 0)
       }, 0)
     },
     extratoFiltradoSomaSaidas() {
-      return this.ExtratoFiltrado.reduce((acc, i) => {
+      return this.ExtratoFiltradoParaTotais.reduce((acc, i) => {
         const v = Number(i.ValorNumerico ?? 0)
         return acc + (v < 0 ? v : 0)
       }, 0)
@@ -365,10 +373,10 @@ export default {
       return Helper.formatCurrency(this.extratoFiltradoSomaSaidas)
     },
     extratoFiltradoQtdEntradas() {
-      return this.ExtratoFiltrado.filter(i => Number(i.ValorNumerico ?? 0) > 0).length
+      return this.ExtratoFiltradoParaTotais.filter(i => Number(i.ValorNumerico ?? 0) > 0).length
     },
     extratoFiltradoQtdSaidas() {
-      return this.ExtratoFiltrado.filter(i => Number(i.ValorNumerico ?? 0) < 0).length
+      return this.ExtratoFiltradoParaTotais.filter(i => Number(i.ValorNumerico ?? 0) < 0).length
     },
     chartBarraInvertidaOptions() {
       const ocultar = this.ocultarValores
@@ -504,6 +512,15 @@ export default {
         Helper.messageExceptionHandler(e)
       }
 
+    },
+    extratoItemContaExibirGraficos(item) {
+      const id = item.IdCategoria
+      if (id == null || id === '') return true
+      if (!this.CategoriaLista.length) return true
+      const cat = this.CategoriaLista.find(c => c.Id === Number(id))
+      if (!cat) return false
+      const ex = cat.ExibirGraficos
+      return ex !== false && ex !== 0 && ex !== '0'
     },
     limparFiltrosExtrato() {
       this.TipoFiltroExtratoSel = null
