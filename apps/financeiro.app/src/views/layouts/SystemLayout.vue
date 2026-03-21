@@ -62,14 +62,22 @@
 
     <hr class="text-muted m-5"/>
 
+    <button
+      v-show="showBackToTop"
+      type="button"
+      class="btn btn-back-to-top shadow"
+      :class="isDark ? 'btn-light' : 'btn-primary'"
+      aria-label="Voltar ao topo"
+      title="Voltar ao topo"
+      @click="scrollToTop"
+    >
+      <b-icon-arrow-up class="back-to-top-icon" aria-hidden="true" />
+    </button>
+
     <footer class="text-muted py-5">
       <div class="container">
-        <p class="float-end mb-1">
-          <a href="#">Back to top</a>
-        </p>
-        <p class="mb-1">Album example is © Bootstrap, but please download and customize it for yourself!</p>
-        <p class="mb-0">New to Bootstrap? <a href="/">Visit the homepage</a> or read our <a
-            href="/docs/5.0/getting-started/introduction/">getting started guide</a>.</p>
+        <p class="mb-1"><strong>financeiro.app</strong> — ferramenta para organizar suas finanças: cadastros, lançamentos e acompanhamento do extrato em um só lugar.</p>
+        <p class="mb-0 small">Objetivo: simplificar o controle do que entra e sai, com categorias claras e visão consolidada das movimentações.</p>
       </div>
     </footer>
 
@@ -91,8 +99,16 @@ export default {
   data() {
     return {
       Usuario: userService.getUser(),
-      theme: getTheme()
+      theme: getTheme(),
+      showBackToTop: false
     }
+  },
+  mounted() {
+    this.updateBackToTopVisibility()
+    window.addEventListener('scroll', this.updateBackToTopVisibility, { passive: true })
+  },
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.updateBackToTopVisibility)
   },
   computed: {
     isDark() {
@@ -128,6 +144,15 @@ export default {
     })
   },
   methods: {
+    updateBackToTopVisibility() {
+      const el = document.documentElement
+      const scrollTop = window.scrollY ?? el.scrollTop
+      const maxScroll = Math.max(0, el.scrollHeight - window.innerHeight)
+      this.showBackToTop = maxScroll > 0 && scrollTop >= maxScroll * 0.5
+    },
+    scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
     toggleTheme() {
       this.theme = this.isDark ? THEME.LIGHT : THEME.DARK
       setTheme(this.theme)
@@ -171,5 +196,24 @@ export default {
 }
 .btn-user-logout:hover {
   cursor: pointer;
+}
+
+.btn-back-to-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 1040;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-to-top-icon {
+  width: 1.35rem;
+  height: 1.35rem;
 }
 </style>

@@ -23,6 +23,10 @@
                 <div class="row">
                   <div class="col-9 small">
                     <p>{{ ExtratoSel.Descricao }}</p>
+                    <p class="mb-0"
+                       v-if="ExtratoSel.TipoExtratoNome"
+                       :class="{ 'text-muted': !ExtratoSel.TipoExtratoCor }"
+                       :style="ExtratoSel.TipoExtratoCor ? { color: ExtratoSel.TipoExtratoCor } : null">{{ ExtratoSel.TipoExtratoNome }}</p>
                   </div>
                   <div class="col-3">
                     <p :class="`${(ExtratoSel.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'} text-align-end`">

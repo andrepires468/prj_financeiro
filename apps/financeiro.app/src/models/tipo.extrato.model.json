@@ -1,4 +1,12 @@
 [
-  { "Id": 1, "Nome": "Débito" },
-  { "Id": 2, "Nome": "Crédito" }
+  {
+    "Id": 1,
+    "Nome": "Débito",
+    "Cor": "#5189C9"
+  },
+  {
+    "Id": 2,
+    "Nome": "Crédito",
+    "Cor": "#A08B4B"
+  }
 ]

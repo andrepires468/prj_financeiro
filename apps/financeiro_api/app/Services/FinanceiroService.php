@@ -79,8 +79,10 @@ class FinanceiroService extends Service
       BancoExtrato.Default BancoDefault,
       Categoria.CategoriaNome,
       Categoria.IconTag,
-      Categoria.IconColor")
+      Categoria.IconColor,
+      TipoExtrato.Nome as TipoExtratoNome")
       ->join('BancoExtrato', 'BancoExtrato.Id', '=', 'Extrato.IdBancoExtrato')
+      ->leftJoin('TipoExtrato', 'TipoExtrato.Id', '=', 'Extrato.IdTipoExtrato')
       ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
       ->where('Extrato.IdBancoExtrato', '=', $this->idBancoExtrato)
