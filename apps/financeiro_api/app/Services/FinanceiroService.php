@@ -8,6 +8,7 @@ use App\Helpers\Pagination;
 use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\BancoExtrato;
 use App\Models\Extrato;
 use App\Models\FechamentoCategoria;
 use Illuminate\Support\Facades\DB;
@@ -26,9 +27,16 @@ class FinanceiroService extends Service
   public function CalendarioExtrato(Request $request)
   {
 
-    // Definindo o mês e ano de início
     $mes_inicio = env('MES_INICIO');
     $ano_inicio = env('ANO_INICIO');
+
+    if($this->idBancoExtrato) {
+      $banco = BancoExtrato::select('MesInicio', 'AnoInicio')->find($this->idBancoExtrato);
+      if($banco && $banco->MesInicio !== null && $banco->AnoInicio !== null) {
+        $mes_inicio = $banco->MesInicio;
+        $ano_inicio = $banco->AnoInicio;
+      }
+    }
 
     // Obtendo o mês e ano atuais
     $mes_atual = date('n'); // Retorna o mês sem o zero à esquerda
@@ -111,6 +119,9 @@ class FinanceiroService extends Service
       ->first();
 
     if(!$extrato)
+      throw new \Exception('Extrato não encontrado');
+
+    if((int)$extrato->IdBancoExtrato !== (int)$this->idBancoExtrato)
       throw new \Exception('Extrato não encontrado');
 
     $categoria_ant = $extrato->IdCategoria;

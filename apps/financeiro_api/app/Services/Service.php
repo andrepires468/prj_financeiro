@@ -13,6 +13,7 @@ class Service
 
   // usuario
   public $idUsuario = null;
+  public $idBancoExtrato = null;
   public $usuarioEmail = null;
   public $usuarioNome = null;
 

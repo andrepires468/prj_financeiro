@@ -23,6 +23,7 @@ $router->group(['prefix' => env('API_VERSION')], function() use ($router) {
 
   $router->group(['prefix' => 'auth'], function() use ($router) {
     $router->post('login', 'AuthController@Login');
+    $router->post('register', 'AuthController@Register');
   });
 
 });

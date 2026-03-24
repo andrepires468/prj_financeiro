@@ -19,6 +19,8 @@ class BancoExtrato extends Model
     'Default' => 'required|boolean',
     'GmailUser' => 'string|max:500',
     'GmailPass' => 'string|max:500',
+    'MesInicio' => 'int',
+    'AnoInicio' => 'int',
   ];
 
   protected $hidden = [];

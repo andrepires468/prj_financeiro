@@ -33,6 +33,21 @@ class AuthController extends Controller
 
   }
 
+  public function Register(Request $request)
+  {
+
+    try {
+
+      $result = $this->authService->Register($request);
+
+      return ApiResponse::GetSuccessResponse($result);
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
   public function Logout()
   {
     try {
