@@ -54,6 +54,11 @@ hr {
     text-align: center;
 }
 
+/* Texto menor (equivalente a .small / <small> do Bootstrap) */
+.text-small {
+    font-size: 0.695em;
+}
+
 .content-body {
     margin-top: 30px;
 }
@@ -448,4 +453,29 @@ input.form-control {
 /* Strong/text-success nos títulos dos charts */
 [data-bs-theme="dark"] .text-success {
     color: var(--bs-success-text-emphasis) !important;
+}
+
+/*
+ * Switch grande — mesma fórmula do Bootstrap ($form-switch-padding-start = width + .5em).
+ * Mantém SVG/estados (:focus, :checked, dark) herdados de .form-switch .form-check-input.
+ */
+.form-switch.form-switch-lg {
+    padding-left: 3em;
+}
+
+.form-switch.form-switch-lg .form-check-input {
+    width: 2.5em;
+    height: 1.25em;
+    margin-left: -3em;
+    border-radius: 2.5em;
+}
+
+.form-switch.form-switch-lg.form-check-reverse {
+    padding-right: 3em;
+    padding-left: 0;
+}
+
+.form-switch.form-switch-lg.form-check-reverse .form-check-input {
+    margin-right: -3em;
+    margin-left: 0;
 }

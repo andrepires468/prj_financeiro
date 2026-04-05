@@ -9,7 +9,7 @@
     <tr>
       <th>Id</th>
       <th>Categoria Nome</th>
-      <th>Gráficos</th>
+      <th class="text-small">Exibir nos Gráficos</th>
       <th colspan="2">Icone</th>
     </tr>
     </thead>
@@ -24,13 +24,21 @@
                @input="updateCategoria(categoria)"
         >
       </td>
-      <td style="width: 90px">
-        <input type="checkbox"
-               class="form-check-input"
-               v-model="categoria.ExibirGraficos"
-               @change="updateCategoria(categoria, true)"
-               title="Exibir no gráfico Categorias do mês"
-        >
+      <td class="text-center align-middle" style="width: 90px">
+        <div class="form-check form-switch form-switch-lg d-inline-block mb-0">
+          <input :id="'categoria-exibir-graficos-' + categoria.Id"
+                 class="form-check-input"
+                 type="checkbox"
+                 role="switch"
+                 v-model="categoria.ExibirGraficos"
+                 @change="updateCategoria(categoria, true)"
+                 title="Exibir no gráfico Categorias do mês"
+          >
+          <label class="form-check-label visually-hidden"
+                 :for="'categoria-exibir-graficos-' + categoria.Id">
+            Exibir no gráfico Categorias do mês
+          </label>
+        </div>
       </td>
       <td style="width: 40px">
         <IconeCategoria :icon="categoria.IconTag" :color="categoria.IconColor" :width="40" :height="40"/>
