@@ -192,7 +192,7 @@ input.form-control {
 }
 
 [data-bs-theme="dark"] .item-extrato-data-repet {
-    color: var(--bs-secondary-color);
+    color: var(--bs-gray-600) !important;
 }
 
 /* Lista de categorias no modal (ModalExtrato.vue) */
