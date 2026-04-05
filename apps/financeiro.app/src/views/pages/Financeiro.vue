@@ -308,7 +308,6 @@ export default {
 
       this.getChartCategoriasMes();
       this.getChartUltimosMeses();
-      this.getChartCategoriaUltimosMeses();
 
     } catch (e) {
       Helper.messageExceptionHandler(e)

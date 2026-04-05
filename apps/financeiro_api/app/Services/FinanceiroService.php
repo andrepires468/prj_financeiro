@@ -168,6 +168,7 @@ class FinanceiroService extends Service
       ->where('FechamentoCategoria.IdBancoExtrato', '=', $idBancoExtrato)
       ->where('FechamentoCategoria.DataBase', '=', $dataBase)
       ->where('FechamentoCategoria.ValorFechado', '<', 0)
+      // categorias que não serão exibidas nos gráficos como Resgate e Aplicacao de valores
       ->where('Categoria.ExibirGraficos', '=', 1)
       ->orderByRaw('FechamentoCategoria.ValorFechado, Categoria.CategoriaNome')
       ->get();
@@ -297,6 +298,11 @@ class FinanceiroService extends Service
           Extrato.IdBancoExtrato = ?
           and Extrato.Valor > 0
           and Extrato.Data between ? and ?
+          and (
+            Extrato.IdCategoria is null
+            -- categorias que não serão exibidas nos gráficos como Resgate e Aplicacao de valores
+            or Extrato.IdCategoria in (select Id from Categoria where ExibirGraficos = 1)
+          )
         ) Entrada,
         (
           select
@@ -307,6 +313,7 @@ class FinanceiroService extends Service
           and Extrato.Valor < 0
           and (
             Extrato.IdCategoria is null
+            -- categorias que não serão exibidas nos gráficos como Resgate e Aplicacao de valores
             or Extrato.IdCategoria in (select Id from Categoria where ExibirGraficos = 1)
           )
           and Extrato.Data between ? and ?
