@@ -518,6 +518,7 @@ export default {
       if (!this.CategoriaLista.length) return true
       const cat = this.CategoriaLista.find(c => c.Id === Number(id))
       if (!cat) return false
+      // categorias que não serão exibidas nos gráficos como Resgate e Aplicacao de valores
       const ex = cat.ExibirGraficos
       return ex !== false && ex !== 0 && ex !== '0'
     },
