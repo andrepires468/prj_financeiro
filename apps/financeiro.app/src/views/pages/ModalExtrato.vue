@@ -1,115 +1,101 @@
 <template>
 
-  <div class="modal fade" id="modalExtrato" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
+  <BaseModal id="modalExtrato" title="Extrato" dialog-class="modal-md">
+    <template #body>
+      <div class="modal-body" v-if="ExtratoSel">
 
-      <div class="settings-widget">
-        <div class="settings-inner-blk p-0">
-          <div class="sell-course-head comman-space">
+        <p>
+          <strong>{{ ExtratoSel.BancoNome }}</strong>
+          <span class="float-right">{{ ExtratoSel.Data }}</span>
+        </p>
 
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Extrato</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar" @click.capture="moveFocusBeforeClose"></button>
+        <div class="row">
+          <div class="col-9 small">
+            <p>{{ ExtratoSel.Descricao }}</p>
+            <p class="mb-0"
+               v-if="ExtratoSel.TipoExtratoNome"
+               :class="{ 'text-muted': !ExtratoSel.TipoExtratoCor }"
+               :style="ExtratoSel.TipoExtratoCor ? { color: ExtratoSel.TipoExtratoCor } : null">{{ ExtratoSel.TipoExtratoNome }}</p>
+          </div>
+          <div class="col-3">
+            <p :class="`${(ExtratoSel.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'} text-align-end`">
+              {{ ocultarValores ? '••••••' : ExtratoSel.Valor }}
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-control-label">
+            <b-icon-tag class="icon"/>
+            Categoria Item Extrato</label>
+          <input type="text" class="form-control" id="pesquisaCategoria" v-model="pesquisaCategoria">
+          <div class="categoria-lista">
+            <div class="row categoria-lista-item p-1"
+                 v-for="(categoria, index) in ((pesquisaCategoria) ? CategoriaLista.filter( i => i.IconTag.includes(pesquisaCategoria.toLowerCase()) || i.CategoriaNome.toLowerCase().includes(pesquisaCategoria.toLowerCase())) : CategoriaLista)"
+                 :key="index"
+                 @click="CategoriaSel = categoria">
+              <div class="col-2">
+                <IconeCategoria :icon="categoria.IconTag"
+                                :color="categoria.IconColor"
+                                :width="30" :height="30"/>
               </div>
-
-              <div class="modal-body" v-if="ExtratoSel">
-
-                <p>
-                  <strong>{{ ExtratoSel.BancoNome }}</strong>
-                  <span class="float-right">{{ ExtratoSel.Data }}</span>
-                </p>
-
-                <div class="row">
-                  <div class="col-9 small">
-                    <p>{{ ExtratoSel.Descricao }}</p>
-                    <p class="mb-0"
-                       v-if="ExtratoSel.TipoExtratoNome"
-                       :class="{ 'text-muted': !ExtratoSel.TipoExtratoCor }"
-                       :style="ExtratoSel.TipoExtratoCor ? { color: ExtratoSel.TipoExtratoCor } : null">{{ ExtratoSel.TipoExtratoNome }}</p>
-                  </div>
-                  <div class="col-3">
-                    <p :class="`${(ExtratoSel.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'} text-align-end`">
-                      {{ ocultarValores ? '••••••' : ExtratoSel.Valor }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-control-label">
-                    <b-icon-tag class="icon"/>
-                    Categoria Item Extrato</label>
-                  <input type="text" class="form-control" id="pesquisaCategoria" v-model="pesquisaCategoria">
-                  <div class="categoria-lista">
-                    <div class="row categoria-lista-item p-1"
-                         v-for="(categoria, index) in ((pesquisaCategoria) ? CategoriaLista.filter( i => i.IconTag.includes(pesquisaCategoria.toLowerCase()) || i.CategoriaNome.toLowerCase().includes(pesquisaCategoria.toLowerCase())) : CategoriaLista)"
-                         :key="index"
-                         @click="CategoriaSel = categoria">
-                      <div class="col-2">
-                        <IconeCategoria :icon="categoria.IconTag"
-                                        :color="categoria.IconColor"
-                                        :width="30" :height="30"/>
-                      </div>
-                      <div class="col-10 p-0 pt-1" :style="`color: ${categoria.IconColor}`">
-                        {{ categoria.CategoriaNome }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-
-                <div class="form-group" v-if="CategoriaSel">
-                  <div class="row p-2">
-                    <div class="col-2">
-                      <IconeCategoria :icon="CategoriaSel.IconTag"
-                                      :color="CategoriaSel.IconColor"
-                                      :width="30" :height="30"/>
-                    </div>
-                    <div class="col-6" :style="`color: ${CategoriaSel.IconColor}`">
-                      {{ CategoriaSel.CategoriaNome }}
-                    </div>
-                    <div class="col-4">
-                      <a class="btn btn-sm btn-fill btn-outline-danger" @click="CategoriaSel = null">
-                        <b-icon-x class="icon"/>
-                        Remover
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                <div v-else>
-                  <p class="text-muted small align-center">Categoria não selecionada</p>
-                </div>
-
-
-                <div class="form-group">
-                  <label class="form-control-label">
-                    <b-icon-pencil-square class="icon"/>
-                    Descrição Personalizada</label>
-                  <textarea class="form-control" v-model="descricaoPersonalizada"/>
-                </div>
-
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" id="fecharModal" @click.capture="moveFocusBeforeClose">Cancelar</button>
-                <button type="button" class="btn btn-primary" @click="updateExtratoSel">Salvar</button>
+              <div class="col-10 p-0 pt-1" :style="`color: ${categoria.IconColor}`">
+                {{ categoria.CategoriaNome }}
               </div>
             </div>
           </div>
         </div>
+
+
+        <div class="form-group" v-if="CategoriaSel">
+          <div class="row p-2">
+            <div class="col-2">
+              <IconeCategoria :icon="CategoriaSel.IconTag"
+                              :color="CategoriaSel.IconColor"
+                              :width="30" :height="30"/>
+            </div>
+            <div class="col-6" :style="`color: ${CategoriaSel.IconColor}`">
+              {{ CategoriaSel.CategoriaNome }}
+            </div>
+            <div class="col-4">
+              <a class="btn btn-sm btn-fill btn-outline-danger" @click="CategoriaSel = null">
+                <b-icon-x class="icon"/>
+                Remover
+              </a>
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          <p class="text-muted small align-center">Categoria não selecionada</p>
+        </div>
+
+
+        <div class="form-group">
+          <label class="form-control-label">
+            <b-icon-pencil-square class="icon"/>
+            Descrição Personalizada</label>
+          <textarea class="form-control" v-model="descricaoPersonalizada"/>
+        </div>
+
       </div>
-    </div>
-  </div>
+    </template>
+    <template #footer>
+      <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" id="fecharModal" @click.capture="moveFocusBeforeClose">Cancelar</button>
+      <button type="button" class="btn btn-primary" @click="updateExtratoSel">Salvar</button>
+    </template>
+  </BaseModal>
 
 </template>
 
 <script>
+import BaseModal from '@/components/BaseModal.vue'
 import financeiroService from "@/services/Financeiro.service";
 import Helper from "@/helpers/helper.service";
 import IconeCategoria from '../../components/IconeCategoria'
 
 export default {
   name: "ModalExtrato",
-  components: {IconeCategoria},
+  components: { BaseModal, IconeCategoria },
   emits:['updateExtrato'],
   props: {
     ExtratoSel: null,

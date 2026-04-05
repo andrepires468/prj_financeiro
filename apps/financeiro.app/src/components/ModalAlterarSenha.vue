@@ -1,93 +1,85 @@
 <template>
 
-  <div class="modal fade" id="modalAlterarSenha" tabindex="-1" aria-labelledby="modalAlterarSenhaTitulo"
-       data-bs-backdrop="static" data-bs-keyboard="false" @hidden.bs.modal="resetForm">
-    <div class="modal-dialog">
-      <div class="settings-widget">
-        <div class="settings-inner-blk p-0">
-          <div class="sell-course-head comman-space">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 id="modalAlterarSenhaTitulo" class="modal-title">Alterar senha</h5>
-                <button type="button" id="fecharModalAlterarSenha" class="btn-close" data-bs-dismiss="modal"
-                        aria-label="Fechar" @click.capture="moveFocusBeforeClose"></button>
-              </div>
-              <div class="modal-body">
-                <div class="form-group mb-3">
-                  <label class="form-control-label" for="senhaAtual">
-                    <b-icon-key class="icon" aria-hidden="true"/>
-                    Senha atual
-                  </label>
-                  <div class="input-group">
-                    <input id="senhaAtual" v-model="senhaAtual" class="form-control" autocomplete="current-password"
-                           :type="revelar.atual ? 'text' : 'password'">
-                    <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
-                            aria-label="Mostrar senha enquanto pressionar"
-                            @pointerdown.prevent="revelar.atual = true"
-                            @pointerup="revelar.atual = false"
-                            @pointerleave="revelar.atual = false"
-                            @pointercancel="revelar.atual = false">
-                      <b-icon-eye aria-hidden="true"/>
-                    </button>
-                  </div>
-                </div>
-                <div class="form-group mb-3">
-                  <label class="form-control-label" for="novaSenha">
-                    <b-icon-lock class="icon" aria-hidden="true"/>
-                    Nova senha
-                  </label>
-                  <div class="input-group">
-                    <input id="novaSenha" v-model="novaSenha" class="form-control" autocomplete="new-password"
-                           :type="revelar.nova ? 'text' : 'password'">
-                    <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
-                            aria-label="Mostrar senha enquanto pressionar"
-                            @pointerdown.prevent="revelar.nova = true"
-                            @pointerup="revelar.nova = false"
-                            @pointerleave="revelar.nova = false"
-                            @pointercancel="revelar.nova = false">
-                      <b-icon-eye aria-hidden="true"/>
-                    </button>
-                  </div>
-                </div>
-                <div class="form-group mb-0">
-                  <label class="form-control-label" for="confirmarNovaSenha">
-                    <b-icon-lock-fill class="icon" aria-hidden="true"/>
-                    Confirmar nova senha
-                  </label>
-                  <div class="input-group">
-                    <input id="confirmarNovaSenha" v-model="confirmarNovaSenha" class="form-control" autocomplete="new-password"
-                           :type="revelar.confirmar ? 'text' : 'password'">
-                    <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
-                            aria-label="Mostrar senha enquanto pressionar"
-                            @pointerdown.prevent="revelar.confirmar = true"
-                            @pointerup="revelar.confirmar = false"
-                            @pointerleave="revelar.confirmar = false"
-                            @pointercancel="revelar.confirmar = false">
-                      <b-icon-eye aria-hidden="true"/>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" @click.capture="moveFocusBeforeClose">Cancelar</button>
-                <button type="button" class="btn btn-primary" :disabled="enviando" @click="submeter">Alterar senha</button>
-              </div>
-            </div>
-          </div>
-        </div>
+  <BaseModal
+    id="modalAlterarSenha"
+    title="Alterar senha"
+    title-id="modalAlterarSenhaTitulo"
+    close-button-id="fecharModalAlterarSenha"
+    dialog-class="modal-sm"
+    @hidden="resetForm"
+  >
+    <div class="form-group mb-3">
+      <label class="form-control-label" for="senhaAtual">
+        <b-icon-key class="icon" aria-hidden="true"/>
+        Senha atual
+      </label>
+      <div class="input-group">
+        <input id="senhaAtual" v-model="senhaAtual" class="form-control" autocomplete="current-password"
+               :type="revelar.atual ? 'text' : 'password'">
+        <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
+                aria-label="Mostrar senha enquanto pressionar"
+                @pointerdown.prevent="revelar.atual = true"
+                @pointerup="revelar.atual = false"
+                @pointerleave="revelar.atual = false"
+                @pointercancel="revelar.atual = false">
+          <b-icon-eye aria-hidden="true"/>
+        </button>
       </div>
     </div>
-  </div>
+    <div class="form-group mb-3">
+      <label class="form-control-label" for="novaSenha">
+        <b-icon-lock class="icon" aria-hidden="true"/>
+        Nova senha
+      </label>
+      <div class="input-group">
+        <input id="novaSenha" v-model="novaSenha" class="form-control" autocomplete="new-password"
+               :type="revelar.nova ? 'text' : 'password'">
+        <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
+                aria-label="Mostrar senha enquanto pressionar"
+                @pointerdown.prevent="revelar.nova = true"
+                @pointerup="revelar.nova = false"
+                @pointerleave="revelar.nova = false"
+                @pointercancel="revelar.nova = false">
+          <b-icon-eye aria-hidden="true"/>
+        </button>
+      </div>
+    </div>
+    <div class="form-group mb-0">
+      <label class="form-control-label" for="confirmarNovaSenha">
+        <b-icon-lock-fill class="icon" aria-hidden="true"/>
+        Confirmar nova senha
+      </label>
+      <div class="input-group">
+        <input id="confirmarNovaSenha" v-model="confirmarNovaSenha" class="form-control" autocomplete="new-password"
+               :type="revelar.confirmar ? 'text' : 'password'">
+        <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
+                aria-label="Mostrar senha enquanto pressionar"
+                @pointerdown.prevent="revelar.confirmar = true"
+                @pointerup="revelar.confirmar = false"
+                @pointerleave="revelar.confirmar = false"
+                @pointercancel="revelar.confirmar = false">
+          <b-icon-eye aria-hidden="true"/>
+        </button>
+      </div>
+    </div>
+
+    <template #footer>
+      <button type="button" class="btn btn-cancel" data-bs-dismiss="modal" @click.capture="moveFocusBeforeClose">Cancelar</button>
+      <button type="button" class="btn btn-primary" :disabled="enviando" @click="submeter">Alterar senha</button>
+    </template>
+  </BaseModal>
 
 </template>
 
 <script>
+import BaseModal from '@/components/BaseModal.vue'
 import authService from '@/services/Auth.service'
 import Helper from '@/helpers/helper.service'
 import Swal from 'sweetalert2/dist/sweetalert2.js'
 
 export default {
   name: 'ModalAlterarSenha',
+  components: { BaseModal },
   data() {
     return {
       senhaAtual: '',
