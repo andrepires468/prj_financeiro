@@ -19,8 +19,19 @@
           </div>
           <div class="col-md-12">
             <div class="form-group">
-              <label class="form-control-label">Password</label>
-              <input type="password" class="form-control" placeholder="" v-model="Password">
+              <label class="form-control-label" for="loginPassword">Password</label>
+              <div class="input-group">
+                <input id="loginPassword" v-model="Password" class="form-control" placeholder="" autocomplete="current-password"
+                       :type="revelarSenha ? 'text' : 'password'">
+                <button type="button" class="btn btn-outline-secondary btn-reveal-senha" tabindex="-1"
+                        aria-label="Mostrar senha enquanto pressionar"
+                        @pointerdown.prevent="revelarSenha = true"
+                        @pointerup="revelarSenha = false"
+                        @pointerleave="revelarSenha = false"
+                        @pointercancel="revelarSenha = false">
+                  <b-icon-eye aria-hidden="true"/>
+                </button>
+              </div>
             </div>
           </div>
           <div class="col-md-12">
@@ -48,7 +59,8 @@ export default {
   data() {
     return {
       Email: null,
-      Password: null
+      Password: null,
+      revelarSenha: false
     }
   },
   methods: {
@@ -84,6 +96,11 @@ export default {
 
 .login-painel {
   margin-top: 60px;
+}
+
+.btn-reveal-senha {
+  user-select: none;
+  touch-action: manipulation;
 }
 
 </style>

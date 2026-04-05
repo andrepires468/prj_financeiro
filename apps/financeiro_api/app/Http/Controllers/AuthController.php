@@ -77,4 +77,19 @@ class AuthController extends Controller
 
   }
 
+  public function ChangePassword(Request $request)
+  {
+
+    try {
+
+      $this->authService->ChangePassword($request);
+
+      return ApiResponse::GetSuccessResponse([], 'Senha alterada com sucesso');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_BAD_REQUEST);
+    }
+
+  }
+
 }

@@ -33,6 +33,7 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
   $router->group(['prefix' => 'auth'], function() use ($router) {
     $router->get('refresh', 'AuthController@Refresh');
     $router->post('logout', 'AuthController@Logout');
+    $router->post('change-password', 'AuthController@ChangePassword');
   });
 
   $router->group(['prefix' => 'financeiro'], function() use ($router) {

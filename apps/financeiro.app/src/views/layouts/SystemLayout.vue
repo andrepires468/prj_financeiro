@@ -45,6 +45,10 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarLogin">
                 <li>
+                  <button type="button" class="dropdown-item btn-user-menu" data-bs-toggle="modal"
+                          data-bs-target="#modalAlterarSenha">Alterar senha</button>
+                </li>
+                <li>
                   <button type="button" class="dropdown-item btn-user-logout" @click="sair">Sair</button>
                 </li>
               </ul>
@@ -81,6 +85,8 @@
       </div>
     </footer>
 
+    <ModalAlterarSenha/>
+
   </router-view>
 
 </template>
@@ -90,12 +96,14 @@
 import authService from '@/services/Auth.service'
 import userService from '../../helpers/user.service'
 import Helper from "@/helpers/helper.service"
+import ModalAlterarSenha from '@/components/ModalAlterarSenha.vue'
 import { getTheme, setTheme, THEME } from '@/helpers/theme.service'
 import moment from "moment"
 import {router} from "@/router";
 
 export default {
   name: "SystemLayout",
+  components: { ModalAlterarSenha },
   data() {
     return {
       Usuario: userService.getUser(),
@@ -187,14 +195,16 @@ export default {
 }
 
 /* Garante que o item Sair do dropdown seja clicável no hover */
-.btn-user-logout {
+.btn-user-logout,
+.btn-user-menu {
   cursor: pointer;
   width: 100%;
   text-align: left;
   border: none;
   background: none;
 }
-.btn-user-logout:hover {
+.btn-user-logout:hover,
+.btn-user-menu:hover {
   cursor: pointer;
 }
 

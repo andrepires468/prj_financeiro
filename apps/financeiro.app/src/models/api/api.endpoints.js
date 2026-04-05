@@ -10,6 +10,7 @@ const APIEndpoints = {
   authValidate: APIBaseEndpoints.AuthController + '/validate-login',
   authLogout: APIBaseEndpoints.AuthController + '/logout',
   authRefreshToken: APIBaseEndpoints.AuthController + '/refresh',
+  authChangePassword: APIBaseEndpoints.AuthController + '/change-password',
 
   process: APIBaseEndpoints.DataController +'/process',
 

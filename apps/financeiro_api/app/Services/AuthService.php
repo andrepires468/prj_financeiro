@@ -207,4 +207,51 @@ class AuthService extends Service
 
   }
 
+  /**
+   * Altera a senha do usuário autenticado (valida senha atual com Bcrypt, igual ao login).
+   */
+  public function ChangePassword(Request $request)
+  {
+
+    $payload = self::getUsuario();
+    if (empty($payload) || empty($payload->IdUsuario)) {
+      throw new \Exception('Sessão inválida');
+    }
+
+    $validator = Validator::make($request->all(), [
+      'CurrentPassword' => 'required|string|min:4',
+      'NewPassword' => 'required|string|min:4',
+      'NewPasswordConfirmation' => 'required|string|same:NewPassword',
+    ], [
+      'CurrentPassword.required' => 'Informe a senha atual.',
+      'CurrentPassword.min' => 'A senha atual deve ter pelo menos 4 caracteres.',
+      'NewPassword.required' => 'Informe a nova senha.',
+      'NewPassword.min' => 'A nova senha deve ter pelo menos 4 caracteres.',
+      'NewPasswordConfirmation.required' => 'Confirme a nova senha.',
+      'NewPasswordConfirmation.same' => 'A confirmação da nova senha não confere.',
+    ]);
+
+    if ($validator->fails()) {
+      throw new \Exception($validator->errors()->first());
+    }
+
+    $usuario = $this->usuario->newQuery()->find($payload->IdUsuario);
+    if (empty($usuario)) {
+      throw new \Exception('Usuário não encontrado');
+    }
+
+    if (!Bcrypt::check($request->CurrentPassword, $usuario->Password)) {
+      throw new \Exception('Senha atual incorreta', 1);
+    }
+
+    if ($request->CurrentPassword === $request->NewPassword) {
+      throw new \Exception('A nova senha deve ser diferente da atual.', 1);
+    }
+
+    $usuario->Password = Bcrypt::hash($request->NewPassword);
+    $usuario->save();
+
+    return [];
+  }
+
 }

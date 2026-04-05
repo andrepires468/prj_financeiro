@@ -54,4 +54,18 @@ export default {
     }
   },
 
+  async changePassword(body) {
+    try {
+      const url = endpoints.authChangePassword
+      const result = await api.post(url, body)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
+
 }
