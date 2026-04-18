@@ -2,5 +2,8 @@ node_modules/
 .idea/
 backups/
 
+# Variáveis de ambiente locais
+.env
+
 # Build output do app
 apps/financeiro.app/dist/
