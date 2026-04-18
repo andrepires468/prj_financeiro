@@ -50,7 +50,32 @@ docker compose down -v
 | **nginx_api** | API via Nginx         | http://localhost:8099              |
 | **mysql**   | Banco de dados          | `localhost:3307` (usuário `root`)   |
 
-O frontend está configurado para chamar a API em `http://localhost:8099` (variáveis `VITE_API_BASE_URL` e `VITE_API_VERSION` no `docker-compose.yml`).
+O frontend chama a API conforme `VITE_API_BASE_URL` e `VITE_API_VERSION` (valores padrão no `docker-compose.yml`; podem ser sobrescritos pelo `.env` na raiz — veja abaixo).
+
+## Acesso na rede local (por IP)
+
+Para abrir o app de **outro computador** na mesma LAN (ou pelo IP da máquina que roda o Docker), o navegador precisa saber onde está a API. `localhost` no `.env` aponta para o próprio cliente, não para o servidor.
+
+1. **Descubra o IPv4** do PC onde o Compose está rodando (Windows: `ipconfig`; use o IP da interface Ethernet/Wi‑Fi da sua rede doméstica, ex.: http://192.168.86.122:8099).
+
+2. **Configure o `.env` na raiz** (copie de `.env.example` se ainda não existir):
+
+   ```env
+   VITE_API_BASE_URL=http://<IP-DO-SERVIDOR>:8099
+   VITE_API_VERSION=/api/v1
+   ```
+
+3. **Recrie o container do app** para o Vite incorporar as variáveis:
+
+   ```bash
+   docker compose up -d --force-recreate app
+   ```
+
+4. **Firewall (Windows)** — libere as portas de entrada **8080** (frontend) e **8099** (API) para TCP, ou o outro PC não conseguirá conectar.
+
+5. **No outro dispositivo**, use `http://<IP-DO-SERVIDOR>:8080` (e, para testar a API diretamente, `http://<IP-DO-SERVIDOR>:8099`).
+
+**Dica:** um IP fixo no adaptador de rede ou reserva DHCP no roteador evita ter que mudar o `.env` sempre que o IP mudar. Se a API retornar erro de **CORS** ao usar outro host, ajuste as origens permitidas na configuração da API.
 
 ## Banco de dados
 
