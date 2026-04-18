@@ -53,6 +53,11 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
     $router->delete('', 'CategoriaController@Delete');
   });
 
+  $router->group(['prefix' => 'banco-extrato'], function() use ($router) {
+    $router->get('', 'BancoExtratoController@Get');
+    $router->put('', 'BancoExtratoController@Put');
+  });
+
   $router->group(['prefix' => 'process'], function() use ($router) {
     $router->post('import-extrato', 'ProcessController@ImportExtrato');
     $router->post('categorizar-extrato', 'ProcessController@CategorizarExtrato');
