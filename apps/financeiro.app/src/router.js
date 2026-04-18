@@ -37,6 +37,11 @@ const routes = [
             path: '/cadastro/categoria',
             name: 'Categoria',
             component: () => import('./views/pages/cadastro/Categoria')
+          },
+          {
+            path: '/cadastro/banco-extrato',
+            name: 'BancoExtrato',
+            component: () => import('./views/pages/cadastro/BancoExtrato')
           }
         ]
       }

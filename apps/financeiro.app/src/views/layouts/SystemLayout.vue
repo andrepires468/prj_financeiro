@@ -35,6 +35,12 @@
                     Categoria
                   </router-link>
                 </li>
+                <li>
+                  <router-link class="dropdown-item d-flex align-items-center gap-2" to="/cadastro/banco-extrato">
+                    <b-icon-bank class="nav-menu-icon" aria-hidden="true" />
+                    Banco Extrato
+                  </router-link>
+                </li>
               </ul>
             </li>
           </ul>
