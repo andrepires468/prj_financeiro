@@ -157,20 +157,23 @@ class FinanceiroService extends Service
     $date = new \DateTime($dataBase);
     $codigo_mes = (int)$date->format('m');
 
+    $data_inicio_mes = (new \DateTime($dataBase))->modify('first day of this month')->format('Y-m-d');
+    $data_fim_mes = (new \DateTime($dataBase))->modify('last day of this month')->format('Y-m-d');
+
     $idBancoExtrato = $this->idBancoExtrato;
 
-
-    $dados = FechamentoCategoria::selectRaw("
+    $dados = Extrato::selectRaw("
       Categoria.CategoriaNome,
       Categoria.IconColor,
-      coalesce(FechamentoCategoria.ValorFechado, 0)  ValorCategoria")
-      ->join('Categoria', 'Categoria.Id', '=', 'FechamentoCategoria.IdCategoria')
-      ->where('FechamentoCategoria.IdBancoExtrato', '=', $idBancoExtrato)
-      ->where('FechamentoCategoria.DataBase', '=', $dataBase)
-      ->where('FechamentoCategoria.ValorFechado', '<', 0)
+      coalesce(sum(Extrato.Valor), 0)  ValorCategoria")
+      ->join('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
+      ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
+      ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
       // categorias que não serão exibidas nos gráficos como Resgate e Aplicacao de valores
       ->where('Categoria.ExibirGraficos', '=', 1)
-      ->orderByRaw('FechamentoCategoria.ValorFechado, Categoria.CategoriaNome')
+      ->groupBy('Categoria.Id', 'Categoria.CategoriaNome', 'Categoria.IconColor')
+      ->havingRaw('coalesce(sum(Extrato.Valor), 0) < 0')
+      ->orderByRaw('coalesce(sum(Extrato.Valor), 0), Categoria.CategoriaNome')
       ->get();
 
 
@@ -229,14 +232,17 @@ class FinanceiroService extends Service
 
     foreach($reversedDataBase as $data) {
 
-      $fechamento = FechamentoCategoria::selectRaw("
+      $fechamento = Extrato::selectRaw("
         ? 'DataBase',
         ? 'CodigoMes',
-        coalesce(FechamentoCategoria.ValorFechado, 0) ValorCategoria",
+        coalesce(sum(Extrato.Valor), 0) ValorCategoria",
         [$data['data_inicio_mes'], $data['codigo_mes']])
-        ->where('FechamentoCategoria.IdBancoExtrato', '=', $idBancoExtrato)
-        ->where('FechamentoCategoria.IdCategoria', '=', $idCategoria)
-        ->where('FechamentoCategoria.DataBase', '=', $data['data_inicio_mes'])
+        ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
+        ->where('Extrato.IdCategoria', '=', $idCategoria)
+        ->whereBetween('Extrato.Data', [
+          $data['data_inicio_mes'] . ' 00:00:00',
+          $data['data_fim_mes'] . ' 23:59:59'
+        ])
         ->first();
 
       $dados[] = $fechamento;

@@ -158,6 +158,7 @@ class ProcessService extends Service
             $extrato->Descricao = $row[3];
             $extrato->IdTipoExtrato = 1; // débito
             $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
             $extrato->save();
 
             $incluidos++;
@@ -266,15 +267,14 @@ class ProcessService extends Service
 
       $fechamento_atual = Extrato::selectRaw("
         coalesce(sum(Extrato.Valor), 0) + (
-          -- Fechamentos anteriores
+          -- Fechamento anterior do MESMO banco
           select
               coalesce(sum(Fechamento.ValorFechado), 0)
           from Fechamento
-          inner join BancoExtrato on BancoExtrato.Id = Fechamento.IdBancoExtrato
           where
-              BancoExtrato.IdUsuario = ?
+              Fechamento.IdBancoExtrato = ?
               and Fechamento.DataBase = ?
-        ) as SaldoFechamento", [$idUsuario, $data_base])
+        ) as SaldoFechamento", [$idBancoExtrato, $data_base])
         ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
         ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
         ->first();
@@ -283,7 +283,10 @@ class ProcessService extends Service
         throw new \Exception('Fechamento não canculado');
 
 
-      $fechamento = Fechamento::select()->where('DataBase', '=', $data_inicio_mes)->first();
+      $fechamento = Fechamento::select()
+        ->where('IdBancoExtrato', '=', $idBancoExtrato)
+        ->where('DataBase', '=', $data_inicio_mes)
+        ->first();
 
       if(!$fechamento) {
         $fechamento = new Fechamento();
@@ -361,6 +364,7 @@ class ProcessService extends Service
 //      $totalCategoria = $totalCategoria *-1;
 
     $fechamentoCategoria = FechamentoCategoria::select()
+      ->where('IdBancoExtrato', '=', $idBancoExtrato)
       ->where('IdCategoria', '=', $idCategoria)
       ->where('DataBase', '=', $dataBase)
       ->first();
