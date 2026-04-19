@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     nginx \
     gettext-base \
+  && rm -f /etc/nginx/sites-enabled/default \
   && rm -rf /var/lib/apt/lists/*
 
 # Instala extensões PHP (imap via install-php-extensions que resolve libc-client no Bookworm)
