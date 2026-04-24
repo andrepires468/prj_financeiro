@@ -8,11 +8,11 @@
 
     <div class="btn-toolbar mb-2 mb-md-0">
 
-      <div class="btn-group me-2">
+      <div class="btn-group">
         <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('next')">
           <b-icon-chevron-compact-left class="icon" />
         </button>
-        <div class="" style="min-width: 210px">
+        <div class="" style="min-width: 160px">
           <MultselectForm :options="CalendarioLista" v-model="CalendarioSel" :internalSearch="true" :searchable="true"
             label="Nome" placeholder="" />
         </div>
@@ -33,7 +33,7 @@
           </span>
 
           <span v-if="!isSync">
-            <b-icon-database-fill-down class="icon" /> Sincronizar Extrato
+            <b-icon-database-fill-down class="icon" /> Sincronizar
           </span>
 
         </button>
@@ -41,7 +41,7 @@
           :title="ocultarValores ? 'Exibir valores' : 'Ocultar valores'">
           <b-icon-eye v-if="!ocultarValores" class="icon" />
           <b-icon-eye-slash v-else class="icon" />
-          {{ ocultarValores ? 'Exibir valores' : 'Ocultar valores' }}
+          {{ ocultarValores ? 'Exibir' : 'Ocultar' }}
         </button>
       </div>
 
@@ -124,22 +124,22 @@
       <div class="row g-2 align-items-center mb-2">
         <div class="col-md-3">
           <MultselectForm :options="TipoExtratoLista" v-model="TipoFiltroExtratoSel" :internalSearch="true"
-            :searchable="true" label="Nome" placeholder="Todos os tipos"  />
+            :searchable="true" label="Nome" placeholder="Tipo"  />
         </div>
         <div class="col-md-5">
           <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroExtratoSel" :internalSearch="true"
-            :searchable="true" label="CategoriaNome" placeholder="Todas as categorias" showCategoryIcon
+            :searchable="true" label="CategoriaNome" placeholder="Categoria" showCategoryIcon
             />
         </div>
         <div class="col-md-3">
           <input type="text" class="form-control form-control-md" id="pesquisaCategoria" v-model="pesquisaExtrato"
-            placeholder="Filtrar extrato">
+            placeholder="Filtrar">
         </div>
-        <div class="col-auto">
-          <button type="button" class="btn btn-md btn-outline-secondary" :disabled="!temFiltroExtrato"
+        <div class="col-md-1">
+          <a type="button" class="btn btn-md btn-fill btn-outline-secondary" :disabled="!temFiltroExtrato"
             @click="limparFiltrosExtrato" title="Limpar filtros da tabela">
             <b-icon-x-circle class="icon" />
-          </button>
+        </a>
         </div>
       </div>
 
