@@ -2,6 +2,30 @@ import userService from './user.service'
 import baseHttpService from './base.http.service'
 import {router} from '../router';
 
+let unauthorizedHandling = false
+
+async function handleUnauthorized(result) {
+  if (unauthorizedHandling) return
+  unauthorizedHandling = true
+  try {
+    const message = (result && result.Message)
+      ? result.Message
+      : 'Não autorizado, faça o login novamente'
+
+    userService.destroyUser()
+
+    if (typeof window !== 'undefined' && window.swalAlert) {
+      await window.swalAlert.fire('Sessão expirada', message, 'warning')
+    }
+
+    if (!router.currentRoute.value || router.currentRoute.value.path !== '/login') {
+      await router.push('/login')
+    }
+  } finally {
+    unauthorizedHandling = false
+  }
+}
+
 export default {
   async executeTokenMethod(url, method, body) {
 
@@ -20,16 +44,17 @@ export default {
       "Authorization": "Bearer " + user.accessToken
     });
 
-    if (!result.Success && result.HttpCode == 401) {
+    if (result && result.Success === false && result.HttpCode == 401) {
 
-      // auth error
-      if (result.Code == 3) {
-        await router.push('/login')
-
-        // permission error
-      } else if (result.Code == 5) {
-        swalToast.fire('Acesso Negado', result.Message, 'warning')
+      // permission error (mantém comportamento original)
+      if (result.Code == 5) {
+        if (typeof window !== 'undefined' && window.swalToast) {
+          window.swalToast.fire('Acesso Negado', result.Message, 'warning')
+        }
         await router.push('/404')
+      } else {
+        // token inválido/expirado/não autorizado -> alerta + logout + redirect
+        await handleUnauthorized(result)
       }
 
     }

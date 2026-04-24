@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const API_VERSION = import.meta.env.VITE_API_VERSION
 
 export default {
-    executeAPI: async (url, method, body, headers) => {
+  executeAPI: async (url, method, body, headers) => {
     url = BASE_URL + API_VERSION + url
     return fetch(url, {
       method: method,
@@ -15,6 +15,11 @@ export default {
     }).then(response => {
       return helperService.getHttpErrror(response).then(responseError => {
         if (responseError) {
+          // Se a API respondeu com o envelope padrão ({ HttpCode, Success, Message, ... }),
+          // retornamos ele diretamente para que a camada superior trate (ex.: 401 -> logout)
+          if (responseError && typeof responseError === 'object' && 'Success' in responseError) {
+            return responseError
+          }
           throw new APIError(responseError.Message, responseError)
         } else {
           return response.json()

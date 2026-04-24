@@ -60,9 +60,28 @@ export default {
 
     const text = await response.text()
 
+    // Tenta parsear o envelope padrão da API ({ HttpCode, Success, Message, Type, Data, ... })
+    // Se veio no formato esperado, retornamos o próprio envelope para que as camadas
+    // superiores possam tratá-lo (ex.: 401 -> exibir alerta, logout e redirect para login).
+    let parsed = null
+    try {
+      parsed = text ? JSON.parse(text) : null
+    } catch (e) {
+      parsed = null
+    }
+
+    if (parsed && typeof parsed === 'object' && 'Success' in parsed) {
+      if (parsed.HttpCode === undefined || parsed.HttpCode === null) {
+        parsed.HttpCode = response.status
+      }
+      return parsed
+    }
+
     switch (response.status) {
       case 406:
         return {
+          HttpCode: 406,
+          Success: false,
           Message: `Not authorized. Session as expired, please Login`,
           Type: 'TOKEN',
           Error: 'Session as expired'
@@ -70,22 +89,28 @@ export default {
       case 401:
         if (response.type == 'cors') {
           return {
+            HttpCode: 401,
+            Success: false,
             Message: `CORS error`,
             Type: 'CORS',
             Error: text
           }
         } else {
           return {
-            Message: `Not authorized`,
+            HttpCode: 401,
+            Success: false,
+            Message: `Não autorizado, faça o login novamente`,
             Type: 'UNAUTHORIZED',
             Error: text
           }
         }
       default:
         return {
-          Message: `error status: ${response.Status}`,
+          HttpCode: response.status,
+          Success: false,
+          Message: `error status: ${response.status}`,
           Type: 'UNKNOWN',
-          Error: JSON.parse(text)?.errors ?? ''
+          Error: (parsed && parsed.errors) ? parsed.errors : ''
         }
 
     }
