@@ -62,6 +62,34 @@ class FinanceiroController extends Controller
 
   }
 
+  public function CreateExtratoManual(Request $request)
+  {
+
+    try {
+
+      $result = $this->financeiroService->CreateExtratoManual($request);
+      return ApiResponse::GetSuccessResponse($result, 'item extrato criado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
+  public function ExcluirExtrato(Request $request)
+  {
+
+    try {
+
+      $this->financeiroService->ExcluirExtrato($request);
+      return ApiResponse::GetSuccessResponse([], 'item extrato excluído');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
   public function ChartCategoriasMes(Request $request)
   {
 

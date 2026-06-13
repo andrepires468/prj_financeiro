@@ -40,6 +40,8 @@ $router->group(['prefix' => env('API_VERSION'), 'middleware' => 'auth:api'], fun
     $router->get('calendario-extrato', 'FinanceiroController@CalendarioExtrato');
     $router->get('lista-extrato', 'FinanceiroController@ListaExtrato');
     $router->put('update-extrato', 'FinanceiroController@UpdateExtrato');
+    $router->post('create-extrato-manual', 'FinanceiroController@CreateExtratoManual');
+    $router->put('excluir-extrato', 'FinanceiroController@ExcluirExtrato');
     $router->get('chart-categoria-ultimos-meses', 'FinanceiroController@ChartCategoriaUltimosMeses');
     $router->get('chart-ultimos-meses', 'FinanceiroController@ChartUltimosMeses');
     $router->get('chart-categorias-mes', 'FinanceiroController@ChartCategoriasMes');

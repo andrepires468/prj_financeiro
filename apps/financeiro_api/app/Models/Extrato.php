@@ -24,10 +24,20 @@ class Extrato extends Model
     'DescricaoPersonalizada' => 'string|max:200',
     'DescricaoTokens' => 'string',
     'CriadoEm' => 'date_format:Y-m-d H:i:s',
+    'Excluido' => 'boolean',
+    'ExcluidoPor' => 'int',
+    'ExcluidoEm' => 'date_format:Y-m-d H:i:s',
+    'RestauradoEm' => 'date_format:Y-m-d H:i:s',
+    'Origem' => 'string|max:20',
   ];
 
   protected $hidden = [
     'CriadoEm'
   ];
+
+  public function scopeAtivos($query)
+  {
+    return $query->where($this->getTable() . '.Excluido', '=', false);
+  }
 
 }

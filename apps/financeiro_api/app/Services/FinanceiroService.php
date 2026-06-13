@@ -94,6 +94,7 @@ class FinanceiroService extends Service
       ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
       ->where('Extrato.IdBancoExtrato', '=', $this->idBancoExtrato)
+      ->ativos()
       ->orderByDesc('Extrato.Data');
 
     if($request->page && $request->pageSize) {
@@ -124,25 +125,165 @@ class FinanceiroService extends Service
     if((int)$extrato->IdBancoExtrato !== (int)$this->idBancoExtrato)
       throw new \Exception('Extrato não encontrado');
 
+    if($extrato->Excluido)
+      throw new \Exception('Extrato excluído não pode ser alterado');
+
     $categoria_ant = $extrato->IdCategoria;
+    $data_antiga = $extrato->Data;
+    $valor_antigo = (float)$extrato->Valor;
+    $atualizarManual = $extrato->Origem === 'manual' && $request->Data;
+
+    if($atualizarManual) {
+
+      if(!$request->Descricao)
+        throw new \Exception('Descricao não passada');
+
+      if($request->Valor === null || $request->Valor === '')
+        throw new \Exception('Valor não passado');
+
+      $valor = (float)$request->Valor;
+
+      if($valor == 0)
+        throw new \Exception('Valor não pode ser zero');
+
+      $idTipoExtrato = (int)$request->IdTipoExtrato;
+      if(!in_array($idTipoExtrato, [1, 2], true))
+        throw new \Exception('IdTipoExtrato inválido');
+
+      $extrato->Data = date('Y-m-d', strtotime($request->Data));
+      $extrato->Valor = $valor;
+      $extrato->Descricao = mb_substr(trim($request->Descricao), 0, 420);
+      $extrato->IdTipoExtrato = $idTipoExtrato;
+
+    }
 
     $extrato->IdCategoria = $categoria_atual;
     $extrato->DescricaoPersonalizada = $request->DescricaoPersonalizada ?? null;
     $extrato->save();
 
-    //se a categoria esta sendo alterada, refaz o fechamento da categoria anterior e da categoria atual
-    if($categoria_ant != $categoria_atual) {
+    $recalcularFechamento = $categoria_ant != $categoria_atual;
+
+    if($atualizarManual) {
+      if($data_antiga != $extrato->Data || $valor_antigo != (float)$extrato->Valor || $categoria_ant != $categoria_atual)
+        $recalcularFechamento = true;
+    }
+
+    if($recalcularFechamento) {
+
+      $datasBase = [];
+
+      if($atualizarManual && $data_antiga != $extrato->Data) {
+        $dataExtratoAntiga = new \DateTime($data_antiga);
+        $datasBase[] = $dataExtratoAntiga->modify('first day of this month')->format('Y-m-d');
+      }
 
       $dataExtrato = new \DateTime($extrato->Data);
-      $dataBase = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+      $datasBase[] = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+      $datasBase = array_values(array_unique($datasBase));
 
-      if($categoria_ant)
-        $this->processService->procFechamentoCategoria($categoria_ant, $dataBase);
+      $categorias = array_values(array_unique(array_filter([$categoria_ant, $categoria_atual])));
 
-      if($categoria_atual)
-        $this->processService->procFechamentoCategoria($categoria_atual, $dataBase);
+      foreach($datasBase as $dataBase) {
+        foreach($categorias as $idCategoria) {
+          $this->processService->procFechamentoCategoria($idCategoria, $dataBase);
+        }
+      }
+
+      if($atualizarManual)
+        $this->processService->Fechamento();
 
     }
+
+  }
+
+  public function CreateExtratoManual(Request $request)
+  {
+
+    if(!$request->Data)
+      throw new \Exception('Data não passada');
+
+    if($request->Valor === null || $request->Valor === '')
+      throw new \Exception('Valor não passado');
+
+    if(!$request->Descricao)
+      throw new \Exception('Descricao não passada');
+
+    if(!$request->IdTipoExtrato)
+      throw new \Exception('IdTipoExtrato não passado');
+
+    $idTipoExtrato = (int)$request->IdTipoExtrato;
+    if(!in_array($idTipoExtrato, [1, 2], true))
+      throw new \Exception('IdTipoExtrato inválido');
+
+    $valor = (float)$request->Valor;
+
+    if($valor == 0)
+      throw new \Exception('Valor não pode ser zero');
+
+    $idCategoria = $request->IdCategoria ?? null;
+
+    $identificador = 'manual-' . substr(md5($this->idBancoExtrato . microtime(true) . random_int(0, 999999)), 0, 32);
+
+    $extrato = new Extrato();
+    $extrato->Data = date('Y-m-d', strtotime($request->Data));
+    $extrato->Valor = $valor;
+    $extrato->Identificador = $identificador;
+    $extrato->Descricao = mb_substr(trim($request->Descricao), 0, 420);
+    $extrato->IdTipoExtrato = $idTipoExtrato;
+    $extrato->IdBancoExtrato = $this->idBancoExtrato;
+    $extrato->IdCategoria = $idCategoria;
+    $extrato->DescricaoPersonalizada = $request->DescricaoPersonalizada ?? null;
+    $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
+    $extrato->Excluido = false;
+    $extrato->Origem = 'manual';
+    $extrato->save();
+
+    $dataExtrato = new \DateTime($extrato->Data);
+    $dataBase = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+
+    if($idCategoria)
+      $this->processService->procFechamentoCategoria($idCategoria, $dataBase);
+
+    $this->processService->Fechamento();
+
+    return ['IdExtrato' => $extrato->Id];
+
+  }
+
+  public function ExcluirExtrato(Request $request)
+  {
+
+    if(!$request->IdExtrato)
+      throw new \Exception('IdExtrato não passado');
+
+    $extrato = Extrato::select()
+      ->where('Id', '=', $request->IdExtrato)
+      ->first();
+
+    if(!$extrato)
+      throw new \Exception('Extrato não encontrado');
+
+    if((int)$extrato->IdBancoExtrato !== (int)$this->idBancoExtrato)
+      throw new \Exception('Extrato não encontrado');
+
+    if($extrato->Excluido)
+      throw new \Exception('Extrato já excluído');
+
+    $categoria_ant = $extrato->IdCategoria;
+
+    $extrato->Excluido = true;
+    $extrato->ExcluidoPor = $this->idUsuario;
+    $extrato->ExcluidoEm = $this->date->format('Y-m-d H:i:s');
+    $extrato->RestauradoEm = null;
+    $extrato->save();
+
+    $dataExtrato = new \DateTime($extrato->Data);
+    $dataBase = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+
+    if($categoria_ant)
+      $this->processService->procFechamentoCategoria($categoria_ant, $dataBase);
+
+    $this->processService->Fechamento();
 
   }
 
@@ -169,6 +310,7 @@ class FinanceiroService extends Service
       ->join('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->ativos()
       // categorias que não serão exibidas nos gráficos como Resgate e Aplicacao de valores
       ->where('Categoria.ExibirGraficos', '=', 1)
       ->groupBy('Categoria.Id', 'Categoria.CategoriaNome', 'Categoria.IconColor')
@@ -243,6 +385,7 @@ class FinanceiroService extends Service
           $data['data_inicio_mes'] . ' 00:00:00',
           $data['data_fim_mes'] . ' 23:59:59'
         ])
+        ->ativos()
         ->first();
 
       $dados[] = $fechamento;
@@ -302,6 +445,7 @@ class FinanceiroService extends Service
           from Extrato
           where
           Extrato.IdBancoExtrato = ?
+          and Extrato.Excluido = 0
           and Extrato.Valor > 0
           and Extrato.Data between ? and ?
           and (
@@ -316,6 +460,7 @@ class FinanceiroService extends Service
           from Extrato
           where
           Extrato.IdBancoExtrato = ?
+          and Extrato.Excluido = 0
           and Extrato.Valor < 0
           and (
             Extrato.IdCategoria is null

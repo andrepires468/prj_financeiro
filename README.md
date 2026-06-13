@@ -47,8 +47,8 @@ docker compose down -v
 
 | Serviço       | Descrição            | URL / porta                                    |
 | ------------- | -------------------- | ---------------------------------------------- |
-| **app**       | Frontend (Vite, dev) | [http://localhost:8080](http://localhost:8080) |
-| **nginx_api** | API via Nginx        | [http://localhost:8099](http://localhost:8099) |
+| **app**       | Frontend (Vite, dev) | [http://localhost:5081](http://localhost:5081) |
+| **nginx_api** | API via Nginx        | [http://localhost:5082](http://localhost:5082) |
 | **mysql**     | Banco de dados       | `localhost:3307` (usuário `root`)              |
 
 
@@ -58,18 +58,18 @@ O frontend chama a API conforme `VITE_API_BASE_URL` e `VITE_API_VERSION` (valore
 
 Para abrir o app de **outro computador** na mesma LAN (ou pelo IP da máquina que roda o Docker), o navegador precisa saber onde está a API. `localhost` no `.env` aponta para o próprio cliente, não para o servidor.
 
-1. **Descubra o IPv4** do PC onde o Compose está rodando (Windows: `ipconfig`; use o IP da interface Ethernet/Wi‑Fi da sua rede doméstica, ex.: [http://192.168.86.122:8099](http://192.168.86.122:8099)).
+1. **Descubra o IPv4** do PC onde o Compose está rodando (Windows: `ipconfig`; use o IP da interface Ethernet/Wi‑Fi da sua rede doméstica, ex.: [http://192.168.86.122:5082](http://192.168.86.122:5082)).
 2. **Configure o `.env` na raiz** (copie de `.env.example` se ainda não existir):
   ```env
-   VITE_API_BASE_URL=http://<IP-DO-SERVIDOR>:8099
+   VITE_API_BASE_URL=http://<IP-DO-SERVIDOR>:5082
    VITE_API_VERSION=/api/v1
   ```
 3. **Recrie o container do app** para o Vite incorporar as variáveis:
   ```bash
    docker compose up -d --force-recreate app
   ```
-4. **Firewall (Windows)** — libere as portas de entrada **8080** (frontend) e **8099** (API) para TCP, ou o outro PC não conseguirá conectar.
-5. **No outro dispositivo**, use `http://<IP-DO-SERVIDOR>:8080` (e, para testar a API diretamente, `http://<IP-DO-SERVIDOR>:8099`).
+4. **Firewall (Windows)** — libere as portas de entrada **5081** (frontend) e **5082** (API) para TCP, ou o outro PC não conseguirá conectar.
+5. **No outro dispositivo**, use `http://<IP-DO-SERVIDOR>:5081` (e, para testar a API diretamente, `http://<IP-DO-SERVIDOR>:5082`).
 
 **Dica:** um IP fixo no adaptador de rede ou reserva DHCP no roteador evita ter que mudar o `.env` sempre que o IP mudar. Se a API retornar erro de **CORS** ao usar outro host, ajuste as origens permitidas na configuração da API.
 

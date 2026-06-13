@@ -29,7 +29,7 @@
                         @pointerup="revelarSenha = false"
                         @pointerleave="revelarSenha = false"
                         @pointercancel="revelarSenha = false">
-                  <b-icon-eye aria-hidden="true"/>
+                  <FontAwesomeIcon icon="eye" aria-hidden="true"/>
                 </button>
               </div>
             </div>
