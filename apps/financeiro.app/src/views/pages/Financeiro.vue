@@ -13,18 +13,18 @@
 
       <div class="financeiro-menu-topo__acoes btn-toolbar mb-2 mb-md-0">
         <div class="btn-group">
-          <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('next')">
-            <b-icon-chevron-compact-left class="icon" />
+          <button type="button" class="btn btn-sm btn-outline-secondary btn-icon-only" @click="navegarFiltro('next')">
+            <FontAwesomeIcon icon="chevron-left" class="icon" />
           </button>
           <div class="financeiro-menu-topo__calendario" style="min-width: 160px">
             <MultselectForm :options="CalendarioLista" v-model="CalendarioSel" :internalSearch="true" :searchable="true"
               label="Nome" placeholder="" />
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('previous')">
-            <b-icon-chevron-compact-right class="icon" />
+          <button type="button" class="btn btn-sm btn-outline-secondary btn-icon-only" @click="navegarFiltro('previous')">
+            <FontAwesomeIcon icon="chevron-right" class="icon" />
           </button>
           <button type="button" class="btn btn-sm btn-outline-secondary" @click="aplicarFiltroExtrato">
-            <b-icon-search class="icon" />
+            <FontAwesomeIcon icon="magnifying-glass" class="icon" />
             Aplicar
           </button>
           <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato" :disabled="isSync">
@@ -37,14 +37,14 @@
             </span>
 
             <span v-if="!isSync">
-              <b-icon-database-fill-down class="icon" /> Sincronizar
+              <FontAwesomeIcon icon="cloud-arrow-down" class="icon" /> Sincronizar
             </span>
 
           </button>
           <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleOcultarValores"
             :title="ocultarValores ? 'Exibir valores' : 'Ocultar valores'">
-            <b-icon-eye v-if="!ocultarValores" class="icon" />
-            <b-icon-eye-slash v-else class="icon" />
+            <FontAwesomeIcon v-if="!ocultarValores" icon="eye" class="icon" />
+            <FontAwesomeIcon v-else icon="eye-slash" class="icon" />
             {{ ocultarValores ? 'Exibir' : 'Ocultar' }}
           </button>
         </div>
@@ -125,6 +125,16 @@
           </button>
         </div>
 
+        <div class="financeiro-extrato-acoes row g-2 align-items-center mb-2">
+          <div class="col-auto">
+            <button type="button" class="btn btn-outline-primary" @click="abrirModalNovoExtrato"
+              title="Cadastrar item manualmente">
+              <FontAwesomeIcon icon="circle-plus" class="icon" />
+              Item Manual
+            </button>
+          </div>
+        </div>
+
         <div class="financeiro-extrato-filtros row g-2 align-items-center mb-2">
           <div class="col-md-3">
             <MultselectForm :options="TipoExtratoLista" v-model="TipoFiltroExtratoSel" :internalSearch="true"
@@ -138,20 +148,11 @@
             <input type="text" class="form-control form-control-md" id="pesquisaCategoria" v-model="pesquisaExtrato"
               placeholder="Filtrar">
           </div>
-          <div class="col-md-1">
-            <a type="button" class="btn btn-md btn-fill btn-outline-secondary" :disabled="!temFiltroExtrato"
-              @click="limparFiltrosExtrato" title="Limpar filtros da tabela">
-              <b-icon-x-circle class="icon" />
-            </a>
-          </div>
-        </div>
-
-        <div class="financeiro-extrato-acoes row g-2 align-items-center mb-2">
-          <div class="col-auto">
-            <button type="button" class="btn btn-md btn-fill btn-outline-primary" @click="abrirModalNovoExtrato"
-              title="Cadastrar item manualmente">
-              <b-icon-plus-circle class="icon" />
-              Item Manual
+          <div class="col-md-1 financeiro-extrato-filtros__limpar">
+            <button type="button" class="btn btn-outline-secondary btn-icon-only btn-fill w-100"
+              :disabled="!temFiltroExtrato" @click="limparFiltrosExtrato" title="Limpar filtros da tabela"
+              aria-label="Limpar filtros da tabela">
+              <FontAwesomeIcon icon="circle-xmark" class="icon" />
             </button>
           </div>
         </div>
@@ -179,13 +180,13 @@
                       {{ item.CategoriaNome }}
                     </span>
                     <span v-if="item.Origem === 'manual'" class="item-extrato-info__manual text-sm" title="Item cadastrado manualmente">
-                      <b-icon-pencil class="icon" aria-hidden="true" />
+                      <FontAwesomeIcon icon="pencil" class="icon" aria-hidden="true" />
                       item manual
                     </span>
                   </div>
 
                   <p class="item-extrato-info__personalizada small m-0" v-if="item.DescricaoPersonalizada">
-                    <b-icon-pencil-square class="icon" />
+                    <FontAwesomeIcon icon="pen-to-square" class="icon" />
                     {{ item.DescricaoPersonalizada }}
                   </p>
 
@@ -831,6 +832,17 @@ export default {
 </script>
 
 <style scoped>
+.financeiro-extrato-filtros__limpar {
+  display: flex;
+  align-items: stretch;
+}
+
+.financeiro-extrato-filtros__limpar .btn {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
 .table-financeiro tbody tr {
   vertical-align: middle;
 }
@@ -909,7 +921,7 @@ export default {
   line-height: 1.25;
 }
 
-.item-extrato-info__manual .icon {
+.item-extrato-info__manual svg[data-icon] {
   font-size: 0.85em;
 }
 
@@ -919,8 +931,10 @@ export default {
   line-height: 1.35;
 }
 
-.item-extrato-info__personalizada .icon {
+.item-extrato-info__personalizada svg[data-icon] {
   margin-right: 0.15rem;
+  font-size: 0.9em;
+  vertical-align: -0.1em;
 }
 
 .item-extrato-info__descricao {

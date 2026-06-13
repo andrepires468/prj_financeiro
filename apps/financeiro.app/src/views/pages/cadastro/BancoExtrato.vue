@@ -10,7 +10,7 @@
 
       <div class="col-12 col-md-6">
         <label class="form-label" for="bancoNome">
-          <b-icon-bank class="icon" aria-hidden="true"/>
+          <FontAwesomeIcon icon="building-columns" class="icon" aria-hidden="true"/>
           Banco
         </label>
         <input id="bancoNome"
@@ -23,7 +23,7 @@
 
       <div class="col-12 col-md-6">
         <label class="form-label" for="gmailUser">
-          <b-icon-envelope class="icon" aria-hidden="true"/>
+          <FontAwesomeIcon icon="envelope" class="icon" aria-hidden="true"/>
           Gmail (usuário)
         </label>
         <input id="gmailUser"
@@ -36,7 +36,7 @@
 
       <div class="col-12 col-md-6">
         <label class="form-label" for="gmailPass">
-          <b-icon-key class="icon" aria-hidden="true"/>
+          <FontAwesomeIcon icon="key" class="icon" aria-hidden="true"/>
           Gmail (senha de app)
           <small v-if="gmailPassConfigurado" class="text-muted ms-1">— já configurada</small>
         </label>
@@ -55,7 +55,7 @@
                   @pointerup="revelarSenha = false"
                   @pointerleave="revelarSenha = false"
                   @pointercancel="revelarSenha = false">
-            <b-icon-eye aria-hidden="true"/>
+            <FontAwesomeIcon icon="eye" aria-hidden="true"/>
           </button>
         </div>
         <div class="form-text">
@@ -65,7 +65,7 @@
 
       <div class="col-6 col-md-3">
         <label class="form-label" for="mesInicio">
-          <b-icon-calendar class="icon" aria-hidden="true"/>
+          <FontAwesomeIcon icon="calendar" class="icon" aria-hidden="true"/>
           Mês de início
         </label>
         <select id="mesInicio" v-model="form.MesInicio" class="form-select">
@@ -76,7 +76,7 @@
 
       <div class="col-6 col-md-3">
         <label class="form-label" for="anoInicio">
-          <b-icon-calendar-event class="icon" aria-hidden="true"/>
+          <FontAwesomeIcon icon="calendar-days" class="icon" aria-hidden="true"/>
           Ano de início
         </label>
         <input id="anoInicio"
@@ -92,11 +92,11 @@
 
     <div class="d-flex gap-2 mt-4">
       <button type="submit" class="btn btn-primary" :disabled="salvando">
-        <b-icon-check2 class="icon" aria-hidden="true"/>
+        <FontAwesomeIcon icon="check" class="icon" aria-hidden="true"/>
         Salvar alterações
       </button>
       <button type="button" class="btn btn-outline-secondary" :disabled="salvando" @click="carregar">
-        <b-icon-arrow-clockwise class="icon" aria-hidden="true"/>
+        <FontAwesomeIcon icon="arrow-rotate-right" class="icon" aria-hidden="true"/>
         Recarregar
       </button>
     </div>
@@ -218,10 +218,6 @@ export default {
 </script>
 
 <style scoped>
-.icon {
-  margin-right: 0.25rem;
-}
-
 .btn-reveal-senha {
   user-select: none;
   touch-action: manipulation;

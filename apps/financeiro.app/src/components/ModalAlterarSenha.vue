@@ -10,7 +10,7 @@
   >
     <div class="form-group mb-3">
       <label class="form-control-label" for="senhaAtual">
-        <b-icon-key class="icon" aria-hidden="true"/>
+        <FontAwesomeIcon icon="key" class="icon" aria-hidden="true"/>
         Senha atual
       </label>
       <div class="input-group">
@@ -22,13 +22,13 @@
                 @pointerup="revelar.atual = false"
                 @pointerleave="revelar.atual = false"
                 @pointercancel="revelar.atual = false">
-          <b-icon-eye aria-hidden="true"/>
+          <FontAwesomeIcon icon="eye" aria-hidden="true"/>
         </button>
       </div>
     </div>
     <div class="form-group mb-3">
       <label class="form-control-label" for="novaSenha">
-        <b-icon-lock class="icon" aria-hidden="true"/>
+        <FontAwesomeIcon icon="lock" class="icon" aria-hidden="true"/>
         Nova senha
       </label>
       <div class="input-group">
@@ -40,13 +40,13 @@
                 @pointerup="revelar.nova = false"
                 @pointerleave="revelar.nova = false"
                 @pointercancel="revelar.nova = false">
-          <b-icon-eye aria-hidden="true"/>
+          <FontAwesomeIcon icon="eye" aria-hidden="true"/>
         </button>
       </div>
     </div>
     <div class="form-group mb-0">
       <label class="form-control-label" for="confirmarNovaSenha">
-        <b-icon-lock-fill class="icon" aria-hidden="true"/>
+        <FontAwesomeIcon icon="lock" class="icon" aria-hidden="true"/>
         Confirmar nova senha
       </label>
       <div class="input-group">
@@ -58,7 +58,7 @@
                 @pointerup="revelar.confirmar = false"
                 @pointerleave="revelar.confirmar = false"
                 @pointercancel="revelar.confirmar = false">
-          <b-icon-eye aria-hidden="true"/>
+          <FontAwesomeIcon icon="eye" aria-hidden="true"/>
         </button>
       </div>
     </div>
@@ -164,10 +164,6 @@ export default {
 </script>
 
 <style scoped>
-.icon {
-  margin-right: 0.25rem;
-}
-
 .btn-reveal-senha {
   user-select: none;
   touch-action: manipulation;

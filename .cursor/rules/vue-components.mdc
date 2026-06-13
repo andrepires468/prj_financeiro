@@ -13,7 +13,7 @@ Antes de criar input, modal, tabela ou seletor customizado, verifique se já exi
 | **BaseModal** | `BaseModal.vue` | Modais Bootstrap 5 com slots `#body` e `#footer`; props `id`, `title`, `dialog-class`. |
 | **DatePicker** | `DatePicker.vue` | Campo de data em pt-BR (`dd/MM/yyyy`). Uso: `:model="data" @update:model="data = $event"`. Valor é `Date`; enviar à API com `moment(data).format('YYYY-MM-DD')`. Também registrado globalmente em `main.js`. |
 | **MultselectForm** | `MultselectForm.vue` | Select pesquisável (vue-multiselect). Props comuns: `options`, `v-model`, `label`, `placeholder`, `showCategoryIcon` para categorias. |
-| **IconeCategoria** | `IconeCategoria.vue` | Ícone SVG de categoria. Props: `icon`, `color`, `width`, `height`. |
+| **IconeCategoria** | `IconeCategoria.vue` | Ícone SVG de categoria. Props: `icon`, `color`, `width`, `height`. **Não** usar Font Awesome aqui. |
 | **DataTable** | `DataTable.vue` | Tabela genérica com colunas configuráveis e botão Editar por linha. |
 | **Pagination** | `Pagination.vue` | Paginação com seletor de page size; usa `MultselectForm` internamente. |
 | **ModalAlterarSenha** | `ModalAlterarSenha.vue` | Fluxo específico de alteração de senha; não usar como modal genérico. |
@@ -24,6 +24,7 @@ Antes de criar input, modal, tabela ou seletor customizado, verifique se já exi
 - `DatePicker`: não usar `<input type="date">` quando o padrão visual do app for o calendário `@vuepic/vue-datepicker`.
 - Modais de negócio: estender `BaseModal`, não duplicar markup Bootstrap.
 - Selects de lista/categoria: preferir `MultselectForm` em vez de `<select>` nativo, salvo casos triviais no próprio modal.
+- Ícones de sistema (menus, botões, labels): usar `FontAwesomeIcon` (ver regra `fontawesome-icons.mdc`). Ícones de categoria: manter `IconeCategoria`.
 
 ## Helpers relacionados
 

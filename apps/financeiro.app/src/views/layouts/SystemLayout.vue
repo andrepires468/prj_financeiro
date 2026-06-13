@@ -19,25 +19,25 @@
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
               <router-link class="nav-link d-flex align-items-center gap-2" to="/financeiro">
-                <b-icon-wallet2 class="nav-menu-icon" aria-hidden="true" />
+                <FontAwesomeIcon icon="wallet" class="nav-menu-icon" aria-hidden="true" />
                 Financeiro
               </router-link>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarCadastro" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <b-icon-folder2 class="nav-menu-icon" aria-hidden="true" />
+                <FontAwesomeIcon icon="folder-open" class="nav-menu-icon" aria-hidden="true" />
                 Cadastros
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarCadastro">
                 <li>
                   <router-link class="dropdown-item d-flex align-items-center gap-2" to="/cadastro/categoria">
-                    <b-icon-tags class="nav-menu-icon" aria-hidden="true" />
+                    <FontAwesomeIcon icon="tags" class="nav-menu-icon" aria-hidden="true" />
                     Categoria
                   </router-link>
                 </li>
                 <li>
                   <router-link class="dropdown-item d-flex align-items-center gap-2" to="/cadastro/banco-extrato">
-                    <b-icon-bank class="nav-menu-icon" aria-hidden="true" />
+                    <FontAwesomeIcon icon="building-columns" class="nav-menu-icon" aria-hidden="true" />
                     Banco Extrato
                   </router-link>
                 </li>
@@ -50,26 +50,26 @@
                     :title="isDark ? 'Ativar modo claro' : 'Ativar modo escuro'"
                     @click="toggleTheme"
                     aria-label="Alternar modo escuro">
-              <b-icon-sun v-if="isDark" class="theme-toggle-icon"/>
-              <b-icon-moon v-else class="theme-toggle-icon"/>
+              <FontAwesomeIcon v-if="isDark" icon="sun" class="theme-toggle-icon"/>
+              <FontAwesomeIcon v-else icon="moon" class="theme-toggle-icon"/>
             </button>
             <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarLogin" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <b-icon-person-circle class="nav-menu-icon" aria-hidden="true" />
+                <FontAwesomeIcon icon="circle-user" class="nav-menu-icon" aria-hidden="true" />
                 {{ Usuario.Nome }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarLogin">
                 <li>
                   <button type="button" class="dropdown-item btn-user-menu d-flex align-items-center gap-2" data-bs-toggle="modal"
                           data-bs-target="#modalAlterarSenha">
-                    <b-icon-key class="nav-menu-icon" aria-hidden="true" />
+                    <FontAwesomeIcon icon="key" class="nav-menu-icon" aria-hidden="true" />
                     Alterar senha
                   </button>
                 </li>
                 <li>
                   <button type="button" class="dropdown-item btn-user-logout d-flex align-items-center gap-2" @click="sair">
-                    <b-icon-box-arrow-right class="nav-menu-icon" aria-hidden="true" />
+                    <FontAwesomeIcon icon="right-from-bracket" class="nav-menu-icon" aria-hidden="true" />
                     Sair
                   </button>
                 </li>
@@ -97,7 +97,7 @@
       title="Voltar ao topo"
       @click="scrollToTop"
     >
-      <b-icon-arrow-up class="back-to-top-icon" aria-hidden="true" />
+      <FontAwesomeIcon icon="arrow-up" class="back-to-top-icon" aria-hidden="true" />
     </button>
 
     <footer class="text-muted py-5">
@@ -211,17 +211,6 @@ export default {
 </script>
 
 <style scoped>
-.nav-menu-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex-shrink: 0;
-}
-
-.theme-toggle-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
 /* Garante que o item Sair do dropdown seja clicável no hover */
 .btn-user-logout,
 .btn-user-menu {
@@ -250,8 +239,4 @@ export default {
   justify-content: center;
 }
 
-.back-to-top-icon {
-  width: 1.35rem;
-  height: 1.35rem;
-}
 </style>

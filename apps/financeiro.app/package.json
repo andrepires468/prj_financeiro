@@ -8,11 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/vue-fontawesome": "^3.2.0",
     "@popperjs/core": "^2.11.8",
     "@vuepic/vue-datepicker": "^8.3.1",
     "bootstrap": "^5.3.3",
-    "bootstrap-icons": "^1.13.1",
-    "bootstrap-icons-vue": "^1.11.3",
     "chart.js": "^4.4.2",
     "chartjs-plugin-datalabels": "^2.2.0",
     "core-js": "3.36.1",

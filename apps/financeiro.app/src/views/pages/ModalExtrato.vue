@@ -4,9 +4,9 @@
     <template #body>
       <div class="modal-body" v-if="modo === 'create' || ExtratoSel">
 
-        <div v-if="modo === 'edit'" class="modal-extrato-topo-acoes mb-3">
+        <div v-if="modo === 'edit'" class="modal-extrato-topo-acoes mb-3 d-flex flex-wrap gap-2">
           <button type="button" class="btn btn-sm btn-outline-danger" :disabled="processando" @click="excluirExtratoSel">
-            <b-icon-trash class="icon"/>
+            <FontAwesomeIcon icon="trash" class="icon"/>
             Excluir
           </button>
           <button
@@ -17,8 +17,8 @@
             :title="editandoManual ? 'Bloquear edição do lançamento' : 'Editar data, valor, tipo e descrição'"
             @click="alternarEdicaoManual"
           >
-            <b-icon-unlock-fill v-if="editandoManual" class="icon" />
-            <b-icon-lock-fill v-else class="icon" />
+            <FontAwesomeIcon v-if="editandoManual" icon="unlock" class="icon" />
+            <FontAwesomeIcon v-else icon="lock" class="icon" />
             {{ editandoManual ? 'Edição liberada' : 'Editar lançamento' }}
           </button>
         </div>
@@ -89,7 +89,7 @@
 
         <div class="form-group">
           <label class="form-control-label">
-            <b-icon-tag class="icon"/>
+            <FontAwesomeIcon icon="tag" class="icon"/>
             Categoria Item Extrato</label>
           <input type="text" class="form-control" id="pesquisaCategoria" v-model="pesquisaCategoria">
           <div class="categoria-lista">
@@ -121,10 +121,10 @@
               {{ categoriaSelecionada.CategoriaNome }}
             </div>
             <div class="col-4">
-              <a class="btn btn-sm btn-fill btn-outline-danger" @click="selecionarCategoria(null)">
-                <b-icon-x class="icon"/>
+              <button type="button" class="btn btn-sm btn-outline-danger btn-fill" @click="selecionarCategoria(null)">
+                <FontAwesomeIcon icon="xmark" class="icon"/>
                 Remover
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@
 
         <div class="form-group">
           <label class="form-control-label">
-            <b-icon-pencil-square class="icon"/>
+            <FontAwesomeIcon icon="pen-to-square" class="icon"/>
             Descrição Personalizada</label>
           <textarea class="form-control" v-model="descricaoPersonalizada"/>
         </div>
