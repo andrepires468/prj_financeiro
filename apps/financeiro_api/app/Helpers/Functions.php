@@ -21,6 +21,40 @@ class Functions
 
   }
 
+  /**
+   * Converte valor monetário de CSV (BR ou US) para float.
+   * Retorna null quando o valor não puder ser interpretado.
+   */
+  public static function parseValorMonetario($valor): ?float
+  {
+    if($valor === null || $valor === '')
+      return null;
+
+    if(is_int($valor) || is_float($valor))
+      return (float)$valor;
+
+    $valor = trim((string)$valor, " \t\r\n\"'");
+    if($valor === '' || $valor === '-')
+      return null;
+
+    $valor = preg_replace('/\s/u', '', $valor);
+    $valor = preg_replace('/^R\$/u', '', $valor);
+
+    if($valor === '')
+      return null;
+
+    // Formato BR: 1.234,56 ou -1.234,56
+    if(preg_match('/^-?\d{1,3}(\.\d{3})*,\d+$/', $valor) || preg_match('/^-?\d+,\d+$/', $valor)) {
+      $valor = str_replace('.', '', $valor);
+      $valor = str_replace(',', '.', $valor);
+    }
+
+    if(!is_numeric($valor))
+      return null;
+
+    return (float)$valor;
+  }
+
 
   public static function getStackTrace($trace)
   {
