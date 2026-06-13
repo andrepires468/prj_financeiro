@@ -5,5 +5,11 @@ backups/
 # Variáveis de ambiente locais
 .env
 
+# Credenciais locais para testes E2E / Playwright
+playwright.credentials.json
+
+# Configuração local do Cursor
+.cursor/mcp.json
+
 # Build output do app
 apps/financeiro.app/dist/

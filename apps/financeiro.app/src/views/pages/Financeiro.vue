@@ -1,210 +1,238 @@
 <template>
 
-  <ModalExtrato :ExtratoSel="ExtratoSel" :CategoriaLista="CategoriaLista" :CategoriaSel="CategoriaSel"
-    :ocultarValores="ocultarValores" @updateExtrato="updateExtrato()" />
+  <button type="button" id="abrirModalExtrato" class="d-none" data-bs-toggle="modal" data-bs-target="#modalExtrato" />
 
-  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-5 pb-2 mb-3 border-bottom">
-    <h1>Financeiro</h1>
+  <ModalExtrato :modo="modalExtratoModo" :ExtratoSel="ExtratoSel" :CategoriaLista="CategoriaLista"
+    :CategoriaSel="CategoriaSel" :TipoExtratoLista="TipoExtratoLista" :ocultarValores="ocultarValores"
+    :CalendarioSel="CalendarioSel" @updateExtrato="onExtratoAlterado()" />
 
-    <div class="btn-toolbar mb-2 mb-md-0">
+  <div class="financeiro-page">
 
-      <div class="btn-group">
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('next')">
-          <b-icon-chevron-compact-left class="icon" />
-        </button>
-        <div class="" style="min-width: 160px">
-          <MultselectForm :options="CalendarioLista" v-model="CalendarioSel" :internalSearch="true" :searchable="true"
-            label="Nome" placeholder="" />
-        </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('previous')">
-          <b-icon-chevron-compact-right class="icon" />
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="aplicarFiltroExtrato">
-          <b-icon-search class="icon" />
-          Aplicar
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato" :disabled="isSync">
+    <div class="financeiro-menu-topo d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-5 pb-2 mb-3 border-bottom">
+      <h1 class="financeiro-menu-topo__titulo">Financeiro</h1>
 
-          <span v-if="isSync">
-            <div class="spinner-border text-secondary spinner-border-sm" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            Sincronizando Extrato...
-          </span>
-
-          <span v-if="!isSync">
-            <b-icon-database-fill-down class="icon" /> Sincronizar
-          </span>
-
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleOcultarValores"
-          :title="ocultarValores ? 'Exibir valores' : 'Ocultar valores'">
-          <b-icon-eye v-if="!ocultarValores" class="icon" />
-          <b-icon-eye-slash v-else class="icon" />
-          {{ ocultarValores ? 'Exibir' : 'Ocultar' }}
-        </button>
-      </div>
-
-    </div>
-  </div>
-  <br />
-  <div class="row">
-    <div class="col-md-6">
-
-      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-success">Categorias Mês</strong>
-          <Bar v-if="ChartCategoriasMes" :key="'categorias-mes-' + ocultarValores" id="chart-categorias-mes"
-            :options="chartBarraInvertidaOptions" :data="ChartCategoriasMes" />
-          <div v-else class="text-align-center p-4">Carregando...</div>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-        </div>
-      </div>
-
-      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-success">
-            Comparativo Categoria (últimos {{ QtdMeses_ChartCategoria }} meses)
-          </strong>
-
-          <div class="me-2">
-            <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroSel" :internalSearch="true"
-              :searchable="true" label="CategoriaNome" placeholder="" showCategoryIcon openDirection="below" />
+      <div class="financeiro-menu-topo__acoes btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('next')">
+            <b-icon-chevron-compact-left class="icon" />
+          </button>
+          <div class="financeiro-menu-topo__calendario" style="min-width: 160px">
+            <MultselectForm :options="CalendarioLista" v-model="CalendarioSel" :internalSearch="true" :searchable="true"
+              label="Nome" placeholder="" />
           </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" @click="navegarFiltro('previous')">
+            <b-icon-chevron-compact-right class="icon" />
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" @click="aplicarFiltroExtrato">
+            <b-icon-search class="icon" />
+            Aplicar
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" @click="sincronizarExtrato" :disabled="isSync">
 
-          <Bar v-if="ChartCategoriaUltimosMeses" :key="'categoria-ultimos-' + ocultarValores"
-            id="chart-categoria-ultimos-meses" :options="chartBarraOptions" :data="ChartCategoriaUltimosMeses" />
-
-          <div v-if="CategoriaUltimosMesesMedia" class="text-align-center mt-2 text-sm">
-            média de <b>{{ ocultarValores ? '••••••' : CategoriaUltimosMesesMedia }}</b> dos últimos
-            {{ ChartCategoriaUltimosMeses?.labels?.length }} mêses
-          </div>
-
-          <div v-else class="text-align-center p-4">
-            {{ CategoriaFiltroSel ? 'Carregando...' : 'Selecione uma Categoria' }}
-          </div>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-        </div>
-      </div>
-
-      <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-success">
-            Entras x Saídas (últimos {{ QtdMeses_ChartEntradaSaida }} meses)
-          </strong>
-          <Bar v-if="ChartUltimosMeses" :key="'ultimos-meses-' + ocultarValores" id="chart-ultimos-meses"
-            :options="chartBarraOptions" :data="ChartUltimosMeses" />
-          <div v-else class="text-align-center p-4">Carregando...</div>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-        </div>
-      </div>
-
-    </div>
-    <div class="col-md-6">
-
-      <div
-        class="alert alert-warning text-align-center d-flex flex-wrap align-items-center justify-content-center gap-2"
-        v-if="Extrato.filter(i => !i.IdCategoria).length > 0">
-        <span>Restam {{Extrato.filter(i => !i.IdCategoria).length}} item(s) para classificar</span>
-        <button type="button" class="btn btn-sm btn-outline-primary" :disabled="!CalendarioSel || isCategorizandoIA"
-          @click="categorizarComIA" title="Categorizar automaticamente com IA (Gemini)">
-          <span v-if="isCategorizandoIA">
-            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-            Categorizando…
-          </span>
-          <span v-else>
-            Categorizar com IA
-          </span>
-        </button>
-      </div>
-
-      <div class="row g-2 align-items-center mb-2">
-        <div class="col-md-3">
-          <MultselectForm :options="TipoExtratoLista" v-model="TipoFiltroExtratoSel" :internalSearch="true"
-            :searchable="true" label="Nome" placeholder="Tipo"  />
-        </div>
-        <div class="col-md-5">
-          <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroExtratoSel" :internalSearch="true"
-            :searchable="true" label="CategoriaNome" placeholder="Categoria" showCategoryIcon
-            />
-        </div>
-        <div class="col-md-3">
-          <input type="text" class="form-control form-control-md" id="pesquisaCategoria" v-model="pesquisaExtrato"
-            placeholder="Filtrar">
-        </div>
-        <div class="col-md-1">
-          <a type="button" class="btn btn-md btn-fill btn-outline-secondary" :disabled="!temFiltroExtrato"
-            @click="limparFiltrosExtrato" title="Limpar filtros da tabela">
-            <b-icon-x-circle class="icon" />
-        </a>
-        </div>
-      </div>
-
-      <table class="table-financeiro w-100">
-        <tbody>
-          <tr v-for="(item, index) in ExtratoFiltrado" :key="index" data-bs-toggle="modal"
-            data-bs-target="#modalExtrato" @click="abrirModalExtrato(item, indiceExtrato(item))">
-            <td
-              style="width: 30px;"
-              :class="`item-extrato-data ${(!ExtratoFiltrado[index - 1] || (item.DataDisplay != ExtratoFiltrado[index - 1].DataDisplay)) ? '' : 'item-extrato-data-repet'}`">
-              <span>{{ item.DiaDisplay }}</span>
-              <span>{{ item.MesDisplay }}</span>
-            </td>
-            <td style="width: 50px;">
-              <div class="item-extrato-icon" :title="item.CategoriaNome">
-                <IconeCategoria :icon="item.IconTag" :color="item.IconColor" :width="30" :height="30" />
+            <span v-if="isSync">
+              <div class="spinner-border text-secondary spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
               </div>
-            </td>
-            <td>
-              <p class="m-0 small" :style="`width: 50px; color: ${item.IconColor}`">{{ item.CategoriaNome }}</p>
-              <p class="m-0 small" v-if="item.DescricaoPersonalizada">
-                <b-icon-pencil-square class="icon" />
-                {{ item.DescricaoPersonalizada }}
-              </p>
-              <p class="m-0 small">
-                <span class="m-0 pe-1" v-if="item.TipoExtratoNome" :class="{ 'text-muted': !item.TipoExtratoCor }"
-                  :style="item.TipoExtratoCor ? { color: item.TipoExtratoCor } : null">
-                  {{ item.TipoExtratoNome }}
-                </span>
-                {{ item.Descricao }}
-              </p>
+              Sincronizando Extrato...
+            </span>
 
-            </td>
-            <td class="item-extrato-valor" style="width: 120px;">
-              <span :class="`small ${(item.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'}`">
-                {{ ocultarValores ? '••••••' : item.Valor }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-        <tfoot v-if="Extrato.length">
-          <tr class="extrato-total-linha extrato-total-linha--entrada">
-            <td colspan="3" class="text-end small fw-semibold align-middle">
-              Entradas ({{ extratoFiltradoQtdEntradas }} {{ extratoFiltradoQtdEntradas === 1 ? 'item' : 'itens' }})
-            </td>
-            <td class="item-extrato-valor align-middle">
-              <span class="small extrato-entrada">
-                {{ ocultarValores ? '••••••' : extratoFiltradoEntradasFormatado }}
-              </span>
-            </td>
-          </tr>
-          <tr class="extrato-total-linha extrato-total-linha--saida">
-            <td colspan="3" class="text-end small fw-semibold align-middle">
-              Saídas ({{ extratoFiltradoQtdSaidas }} {{ extratoFiltradoQtdSaidas === 1 ? 'item' : 'itens' }})
-            </td>
-            <td class="item-extrato-valor align-middle">
-              <span class="small extrato-saida">
-                {{ ocultarValores ? '••••••' : extratoFiltradoSaidasFormatado }}
-              </span>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+            <span v-if="!isSync">
+              <b-icon-database-fill-down class="icon" /> Sincronizar
+            </span>
 
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleOcultarValores"
+            :title="ocultarValores ? 'Exibir valores' : 'Ocultar valores'">
+            <b-icon-eye v-if="!ocultarValores" class="icon" />
+            <b-icon-eye-slash v-else class="icon" />
+            {{ ocultarValores ? 'Exibir' : 'Ocultar' }}
+          </button>
+        </div>
+      </div>
     </div>
+
+    <div class="financeiro-conteudo row">
+      <div class="financeiro-charts col-md-6">
+
+        <div class="financeiro-chart-card row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-success">Categorias Mês</strong>
+            <Bar v-if="ChartCategoriasMes" :key="'categorias-mes-' + ocultarValores" id="chart-categorias-mes"
+              :options="chartBarraInvertidaOptions" :data="ChartCategoriasMes" />
+            <div v-else class="text-align-center p-4">Carregando...</div>
+          </div>
+          <div class="col-auto d-none d-lg-block">
+          </div>
+        </div>
+
+        <div class="financeiro-chart-card row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-success">
+              Comparativo Categoria (últimos {{ QtdMeses_ChartCategoria }} meses)
+            </strong>
+
+            <div class="me-2">
+              <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroSel" :internalSearch="true"
+                :searchable="true" label="CategoriaNome" placeholder="" showCategoryIcon openDirection="below" />
+            </div>
+
+            <Bar v-if="ChartCategoriaUltimosMeses" :key="'categoria-ultimos-' + ocultarValores"
+              id="chart-categoria-ultimos-meses" :options="chartBarraOptions" :data="ChartCategoriaUltimosMeses" />
+
+            <div v-if="CategoriaUltimosMesesMedia" class="text-align-center mt-2 text-sm">
+              média de <b>{{ ocultarValores ? '••••••' : CategoriaUltimosMesesMedia }}</b> dos últimos
+              {{ ChartCategoriaUltimosMeses?.labels?.length }} mêses
+            </div>
+
+            <div v-else class="text-align-center p-4">
+              {{ CategoriaFiltroSel ? 'Carregando...' : 'Selecione uma Categoria' }}
+            </div>
+          </div>
+          <div class="col-auto d-none d-lg-block">
+          </div>
+        </div>
+
+        <div class="financeiro-chart-card row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-success">
+              Entras x Saídas (últimos {{ QtdMeses_ChartEntradaSaida }} meses)
+            </strong>
+            <Bar v-if="ChartUltimosMeses" :key="'ultimos-meses-' + ocultarValores" id="chart-ultimos-meses"
+              :options="chartBarraOptions" :data="ChartUltimosMeses" />
+            <div v-else class="text-align-center p-4">Carregando...</div>
+          </div>
+          <div class="col-auto d-none d-lg-block">
+          </div>
+        </div>
+
+      </div>
+
+      <div class="financeiro-extrato col-md-6">
+
+        <div
+          class="financeiro-extrato-alerta alert alert-warning text-align-center d-flex flex-wrap align-items-center justify-content-center gap-2"
+          v-if="Extrato.filter(i => !i.IdCategoria).length > 0">
+          <span>Restam {{Extrato.filter(i => !i.IdCategoria).length}} item(s) para classificar</span>
+          <button type="button" class="btn btn-sm btn-outline-primary" :disabled="!CalendarioSel || isCategorizandoIA"
+            @click="categorizarComIA" title="Categorizar automaticamente com IA (Gemini)">
+            <span v-if="isCategorizandoIA">
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Categorizando…
+            </span>
+            <span v-else>
+              Categorizar com IA
+            </span>
+          </button>
+        </div>
+
+        <div class="financeiro-extrato-filtros row g-2 align-items-center mb-2">
+          <div class="col-md-3">
+            <MultselectForm :options="TipoExtratoLista" v-model="TipoFiltroExtratoSel" :internalSearch="true"
+              :searchable="true" label="Nome" placeholder="Tipo" />
+          </div>
+          <div class="col-md-5">
+            <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroExtratoSel" :internalSearch="true"
+              :searchable="true" label="CategoriaNome" placeholder="Categoria" showCategoryIcon />
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control form-control-md" id="pesquisaCategoria" v-model="pesquisaExtrato"
+              placeholder="Filtrar">
+          </div>
+          <div class="col-md-1">
+            <a type="button" class="btn btn-md btn-fill btn-outline-secondary" :disabled="!temFiltroExtrato"
+              @click="limparFiltrosExtrato" title="Limpar filtros da tabela">
+              <b-icon-x-circle class="icon" />
+            </a>
+          </div>
+        </div>
+
+        <div class="financeiro-extrato-acoes row g-2 align-items-center mb-2">
+          <div class="col-auto">
+            <button type="button" class="btn btn-md btn-fill btn-outline-primary" @click="abrirModalNovoExtrato"
+              title="Cadastrar item manualmente">
+              <b-icon-plus-circle class="icon" />
+              Item Manual
+            </button>
+          </div>
+        </div>
+
+        <div class="financeiro-extrato-itens">
+          <table class="table-financeiro w-100">
+            <tbody>
+              <tr v-for="(item, index) in ExtratoFiltrado" :key="index" data-bs-toggle="modal"
+                data-bs-target="#modalExtrato" @click="abrirModalExtrato(item, indiceExtrato(item))">
+                <td
+                  style="width: 30px;"
+                  :class="`item-extrato-data ${(!ExtratoFiltrado[index - 1] || (item.DataDisplay != ExtratoFiltrado[index - 1].DataDisplay)) ? '' : 'item-extrato-data-repet'}`">
+                  <span>{{ item.DiaDisplay }}</span>
+                  <span>{{ item.MesDisplay }}</span>
+                </td>
+                <td style="width: 50px;">
+                  <div class="item-extrato-icon" :title="item.CategoriaNome">
+                    <IconeCategoria :icon="item.IconTag" :color="item.IconColor" :width="30" :height="30" />
+                  </div>
+                </td>
+                <td class="item-extrato-info">
+                  <div class="item-extrato-info__top">
+                    <span class="item-extrato-info__categoria small"
+                      :style="item.IconColor ? { color: item.IconColor } : null">
+                      {{ item.CategoriaNome }}
+                    </span>
+                    <span v-if="item.Origem === 'manual'" class="item-extrato-info__manual text-sm" title="Item cadastrado manualmente">
+                      <b-icon-pencil class="icon" aria-hidden="true" />
+                      item manual
+                    </span>
+                  </div>
+
+                  <p class="item-extrato-info__personalizada small m-0" v-if="item.DescricaoPersonalizada">
+                    <b-icon-pencil-square class="icon" />
+                    {{ item.DescricaoPersonalizada }}
+                  </p>
+
+                  <p class="item-extrato-info__descricao small m-0">
+                    <span v-if="item.TipoExtratoNome" class="item-extrato-info__tipo"
+                      :class="{ 'text-muted': !item.TipoExtratoCor }"
+                      :style="item.TipoExtratoCor ? { color: item.TipoExtratoCor } : null">
+                      {{ item.TipoExtratoNome }}
+                    </span>
+                    <span class="item-extrato-info__texto">{{ item.Descricao }}</span>
+                  </p>
+                </td>
+                <td class="item-extrato-valor">
+                  <span :class="`small ${(item.Tipo == 'entrada') ? 'extrato-entrada' : 'extrato-saida'}`">
+                    {{ ocultarValores ? '••••••' : item.Valor }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot v-if="Extrato.length">
+              <tr class="extrato-total-linha extrato-total-linha--entrada">
+                <td colspan="3" class="text-end small fw-semibold align-middle">
+                  Entradas ({{ extratoFiltradoQtdEntradas }} {{ extratoFiltradoQtdEntradas === 1 ? 'item' : 'itens' }})
+                </td>
+                <td class="item-extrato-valor align-middle">
+                  <span class="small extrato-entrada">
+                    {{ ocultarValores ? '••••••' : extratoFiltradoEntradasFormatado }}
+                  </span>
+                </td>
+              </tr>
+              <tr class="extrato-total-linha extrato-total-linha--saida">
+                <td colspan="3" class="text-end small fw-semibold align-middle">
+                  Saídas ({{ extratoFiltradoQtdSaidas }} {{ extratoFiltradoQtdSaidas === 1 ? 'item' : 'itens' }})
+                </td>
+                <td class="item-extrato-valor align-middle">
+                  <span class="small extrato-saida">
+                    {{ ocultarValores ? '••••••' : extratoFiltradoSaidasFormatado }}
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
 </template>
@@ -241,6 +269,7 @@ export default {
       Extrato: [],
       ExtratoSel: null,
       ExtratoSelIndex: null,
+      modalExtratoModo: 'edit',
       pesquisaExtrato: null,
 
       CategoriaLista: [],
@@ -532,10 +561,19 @@ export default {
     },
     async abrirModalExtrato(item, index) {
 
+      this.modalExtratoModo = 'edit'
       this.ExtratoSel = item
       this.ExtratoSelIndex = index
       this.CategoriaSel = this.CategoriaLista.find(i => i.Id == item.IdCategoria) ?? null
 
+    },
+    abrirModalNovoExtrato() {
+      this.modalExtratoModo = 'create'
+      this.ExtratoSel = { Origem: 'manual' }
+      this.CategoriaSel = null
+      this.$nextTick(() => {
+        document.getElementById('abrirModalExtrato')?.click()
+      })
     },
     findAdjacentId(list, currentId, direction) {
 
@@ -620,6 +658,12 @@ export default {
         }
       });
 
+    },
+    async onExtratoAlterado() {
+      await this.getExtrato()
+      this.getChartCategoriasMes();
+      this.getChartCategoriaUltimosMeses();
+      this.getChartUltimosMeses();
     },
     async updateExtrato() {
 
@@ -787,6 +831,10 @@ export default {
 </script>
 
 <style scoped>
+.table-financeiro tbody tr {
+  vertical-align: middle;
+}
+
 .table-financeiro tbody tr:hover {
   cursor: pointer;
   background-color: rgba(0, 0, 0, 0.04);
@@ -807,8 +855,9 @@ export default {
 
 .item-extrato-data {
   width: 50px;
-  padding: 0 0 0 8px;
+  padding: 0.65rem 0 0.65rem 8px;
   font-weight: bold;
+  vertical-align: middle;
 }
 
 .item-extrato-data-repet {
@@ -827,11 +876,72 @@ export default {
 }
 
 .item-extrato-icon {
-  padding: 20px 20px 20px 20px;
+  width: 50px;
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+}
+
+.item-extrato-info {
+  padding: 0.65rem 0.75rem 0.65rem 0;
+  vertical-align: middle;
+}
+
+.item-extrato-info__top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.item-extrato-info__categoria {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.item-extrato-info__manual {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #d4a017;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.item-extrato-info__manual .icon {
+  font-size: 0.85em;
+}
+
+.item-extrato-info__personalizada {
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 0.25rem;
+  line-height: 1.35;
+}
+
+.item-extrato-info__personalizada .icon {
+  margin-right: 0.15rem;
+}
+
+.item-extrato-info__descricao {
+  line-height: 1.4;
+  color: var(--bs-body-color);
+}
+
+.item-extrato-info__tipo {
+  font-weight: 500;
+  margin-right: 0.35rem;
+}
+
+.item-extrato-info__texto {
+  word-break: break-word;
 }
 
 .item-extrato-valor {
-  width: 110px;
-  padding: 0 14px 0 14px;
+  width: 120px;
+  padding: 0.65rem 14px 0.65rem 0;
+  text-align: right;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 </style>

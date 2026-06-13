@@ -148,8 +148,19 @@ class ProcessService extends Service
               continue;
 
             $extrato = Extrato::where("Identificador", '=', $row[2])->first();
-            if($extrato)
+            if($extrato) {
+              if($extrato->Excluido) {
+                $extrato->Data = Functions::formatDate($row[0]);
+                $extrato->Valor = $row[1];
+                $extrato->Descricao = $row[3];
+                $extrato->Excluido = false;
+                $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
+                $extrato->Origem = 'integracao_proc';
+                $extrato->save();
+                $incluidos++;
+              }
               continue;
+            }
 
             $extrato = new Extrato();
             $extrato->Data = Functions::formatDate($row[0]);
@@ -159,6 +170,8 @@ class ProcessService extends Service
             $extrato->IdTipoExtrato = 1; // débito
             $extrato->IdBancoExtrato = $idBancoExtrato;
             $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
+            $extrato->Excluido = false;
+            $extrato->Origem = 'integracao_proc';
             $extrato->save();
 
             $incluidos++;
@@ -216,8 +229,21 @@ class ProcessService extends Service
             // Gerar identificador único para evitar duplicados: hash dos campos relevantes (ex.: date, title, amount)
             $identificador = 'credito-' . md5($row[0] . '|' . $row[1] . '|' . $row[2]);
             $extrato = Extrato::where('Identificador', '=', $identificador)->first();
-            if($extrato)
+            if($extrato) {
+              if($extrato->Excluido) {
+                $dataCredito = trim($row[0]);
+                $dt = \DateTime::createFromFormat('Y-m-d', $dataCredito);
+                $extrato->Data = $dt ? $dt->format('Y-m-d') : date('Y-m-d', strtotime($dataCredito));
+                $extrato->Valor = $row[2] * -1;
+                $extrato->Descricao = mb_substr($row[1], 0, 420);
+                $extrato->Excluido = false;
+                $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
+                $extrato->Origem = 'integracao_proc';
+                $extrato->save();
+                $incluidos++;
+              }
               continue;
+            }
 
             // CSV crédito: date em Y-m-d (ex.: 2026-03-01)
             $dataCredito = trim($row[0]);
@@ -229,6 +255,8 @@ class ProcessService extends Service
             $extrato->Descricao = mb_substr($row[1], 0, 420); // title
             $extrato->IdTipoExtrato = 2; // crédito
             $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->Excluido = false;
+            $extrato->Origem = 'integracao_proc';
             $extrato->save();
 
             $incluidos++;
@@ -277,6 +305,7 @@ class ProcessService extends Service
         ) as SaldoFechamento", [$idBancoExtrato, $data_base])
         ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
         ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+        ->ativos()
         ->first();
 
       if(!$fechamento_atual)
@@ -353,6 +382,7 @@ class ProcessService extends Service
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->where('Extrato.IdCategoria', '=', $idCategoria)
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->ativos()
       ->first();
 
     $totalCategoria = 0;
@@ -418,6 +448,7 @@ class ProcessService extends Service
       ->join('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->whereBetween('Extrato.Data', [$data_inicio_hist, $data_fim_hist])
+      ->ativos()
       ->orderByDesc('Extrato.Data')
       ->limit(300)
       ->get();
@@ -430,6 +461,7 @@ class ProcessService extends Service
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->whereNull('Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->ativos()
       ->get();
 
     if($itensACategorizar->isEmpty()) {
@@ -504,6 +536,7 @@ PROMPT;
 
       $extrato = Extrato::where('Id', '=', $id)
         ->where('IdBancoExtrato', '=', $idBancoExtrato)
+        ->ativos()
         ->first();
       if(!$extrato) continue;
 

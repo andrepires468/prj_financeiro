@@ -253,6 +253,25 @@ export default {
   formatCurrency(valor) {
     return 'R$ ' + parseFloat(valor).toFixed(2).toString().replaceAll('.', ',')
   },
+  formatCurrencyInput(valor) {
+    if (valor === null || valor === undefined || valor === '')
+      return ''
+    const numero = parseFloat(valor)
+    if (Number.isNaN(numero))
+      return ''
+    return this.formatCurrency(numero)
+  },
+  parseCurrencyMaskedInput(texto) {
+    if (!texto || !String(texto).trim())
+      return null
+    const str = String(texto).trim()
+    const negativo = str.includes('-')
+    const digits = str.replace(/[^\d]/g, '')
+    if (!digits)
+      return null
+    const numero = parseInt(digits, 10) / 100
+    return negativo ? -numero : numero
+  },
   normalizarTexto(texto) {
     return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
   }
