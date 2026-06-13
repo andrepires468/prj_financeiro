@@ -95,6 +95,11 @@ class ProcessService extends Service
       $listados += $resultadoCredito['listados'];
       $incluidos += $resultadoCredito['incluidos'];
 
+      $resultadoEmpresas = $this->importarExtratoEmpresas($mailbox, $idBancoExtrato);
+      $emails += $resultadoEmpresas['emails'];
+      $listados += $resultadoEmpresas['listados'];
+      $incluidos += $resultadoEmpresas['incluidos'];
+
       if($incluidos > 0)
         $this->Fechamento();
     } finally {
@@ -229,6 +234,72 @@ class ProcessService extends Service
             $extrato->Descricao = mb_substr($row[1], 0, 420); // title
             $extrato->IdTipoExtrato = 2; // crédito
             $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->save();
+
+            $incluidos++;
+          }
+
+          imap_setflag_full($mailbox, $mail_id, "\\Seen");
+        }
+      }
+    }
+
+    return ['emails' => $emails, 'listados' => $listados, 'incluidos' => $incluidos];
+  }
+
+  /**
+   * Importa lançamentos de débito a partir de emails do Nu Empresas (extrato da conta Nu Empresas).
+   * CSV: date, amount, identifier(UUID), title (mesmo layout do importarDebito). IdTipoExtrato = 1 (débito).
+   * Retorna contadores para emails processados, linhas listadas e itens incluídos.
+   */
+  private function importarExtratoEmpresas($mailbox, $idBancoExtrato)
+  {
+    $emails = 0;
+    $listados = 0;
+    $incluidos = 0;
+
+    $search_criteria = 'UNSEEN FROM "@nubank.com.br" SUBJECT "conta Nu Empresas"';
+    $mails = imap_search($mailbox, $search_criteria);
+
+    if(!$mails)
+      return ['emails' => 0, 'listados' => 0, 'incluidos' => 0];
+
+    foreach($mails as $mail_id) {
+
+      $structure = imap_fetchstructure($mailbox, $mail_id);
+
+      foreach($structure->parts as $part_number => $part) {
+
+        if($part->ifdparameters && $part->dparameters[0]->attribute == 'FILENAME' && pathinfo($part->dparameters[0]->value)['extension'] == 'csv') {
+
+          $emails++;
+
+          $attachment = imap_fetchbody($mailbox, $mail_id, $part_number + 1);
+          $decodedCsv = base64_decode($attachment);
+          $rows = array_map('str_getcsv', explode("\n", $decodedCsv));
+          array_shift($rows);
+
+          $listados = count($rows);
+
+          foreach($rows as $row) {
+
+            if(count($row) < 4)
+              continue;
+
+            // Prefixo 'empresas-' para não colidir com outros bancos que também usam UUID
+            $identificador = 'empresas-' . $row[2];
+            $extrato = Extrato::where('Identificador', '=', $identificador)->first();
+            if($extrato)
+              continue;
+
+            $extrato = new Extrato();
+            $extrato->Data = Functions::formatDate($row[0]);
+            $extrato->Valor = $row[1];
+            $extrato->Identificador = $identificador;
+            $extrato->Descricao = mb_substr($row[3], 0, 420);
+            $extrato->IdTipoExtrato = 1; // débito
+            $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
             $extrato->save();
 
             $incluidos++;
