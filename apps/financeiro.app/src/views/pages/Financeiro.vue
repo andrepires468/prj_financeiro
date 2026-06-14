@@ -130,13 +130,16 @@
             <div class="btn-group" role="group" aria-label="Modo de listagem do extrato">
               <button type="button" class="btn btn-outline-secondary" :class="{ active: modoListaExtrato === 'ativos' }"
                 :aria-pressed="modoListaExtrato === 'ativos'" @click="alternarModoListaExtrato('ativos')">
+                <FontAwesomeIcon icon="eye" class="icon" />
                 Ativos
+                <span class="financeiro-extrato-modo__count">({{ extratoCountAtivos }})</span>
               </button>
               <button type="button" class="btn btn-outline-secondary"
                 :class="{ active: modoListaExtrato === 'excluidos' }"
                 :aria-pressed="modoListaExtrato === 'excluidos'" @click="alternarModoListaExtrato('excluidos')">
                 <FontAwesomeIcon icon="trash" class="icon" />
                 Excluídos
+                <span class="financeiro-extrato-modo__count">({{ extratoCountExcluidos }})</span>
               </button>
             </div>
             <button v-if="modoListaExtrato === 'ativos'" type="button" class="btn btn-outline-primary"
@@ -316,6 +319,8 @@ export default {
       TipoFiltroExtratoSel: null,
       /** Modo da listagem: 'ativos' ou 'excluidos' */
       modoListaExtrato: 'ativos',
+      extratoCountAtivos: 0,
+      extratoCountExcluidos: 0,
 
       ChartCategoriasMes: null,
       QtdMeses_ChartCategoria: 6,
@@ -802,7 +807,9 @@ export default {
       if (!result.Success)
         throw new Error(Helper.getMessageError(result))
 
-      this.setarExtrato(result.Data)
+      this.extratoCountAtivos = Number(result.Data?.CountAtivos ?? 0)
+      this.extratoCountExcluidos = Number(result.Data?.CountExcluidos ?? 0)
+      this.setarExtrato(result.Data?.Itens ?? [])
 
     },
     async sincronizarExtrato() {
@@ -951,6 +958,12 @@ export default {
 </script>
 
 <style scoped>
+.financeiro-extrato-modo__count {
+  margin-left: 0.15rem;
+  font-size: 0.875em;
+  opacity: 0.85;
+}
+
 .financeiro-extrato-filtros__titulo {
   float: none;
   width: 100%;

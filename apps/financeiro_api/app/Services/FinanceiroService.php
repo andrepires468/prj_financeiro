@@ -80,6 +80,7 @@ class FinanceiroService extends Service
 
 
     $apenasExcluidos = in_array(strtolower((string)$request->excluidos), ['1', 'true', 'yes'], true);
+    $contadores = $this->contadoresExtratoMes($data_inicio, $data_fim);
 
     $model = Extrato::selectRaw("
       Extrato.*,
@@ -107,10 +108,33 @@ class FinanceiroService extends Service
     if($request->page && $request->pageSize) {
       $count = $model->count();
       $items = $model->skip(($request->page - 1) * $request->pageSize)->take($request->pageSize)->get();
-      return Pagination::Paginate($items, $count, $request->page, $request->pageSize);
+      return array_merge(
+        Pagination::Paginate($items, $count, $request->page, $request->pageSize),
+        $contadores
+      );
     }
 
-    return $model->get();
+    return array_merge([
+      'Itens' => $model->get(),
+    ], $contadores);
+
+  }
+
+  private function contadoresExtratoMes($data_inicio, $data_fim)
+  {
+
+    $row = Extrato::whereBetween('Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
+      ->where('IdBancoExtrato', '=', $this->idBancoExtrato)
+      ->selectRaw('
+        SUM(CASE WHEN Excluido = 0 THEN 1 ELSE 0 END) as CountAtivos,
+        SUM(CASE WHEN Excluido = 1 THEN 1 ELSE 0 END) as CountExcluidos
+      ')
+      ->first();
+
+    return [
+      'CountAtivos' => (int)($row->CountAtivos ?? 0),
+      'CountExcluidos' => (int)($row->CountExcluidos ?? 0),
+    ];
 
   }
 
