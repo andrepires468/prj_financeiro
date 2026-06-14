@@ -90,6 +90,20 @@ class FinanceiroController extends Controller
 
   }
 
+  public function RestaurarExtrato(Request $request)
+  {
+
+    try {
+
+      $this->financeiroService->RestaurarExtrato($request);
+      return ApiResponse::GetSuccessResponse([], 'item extrato restaurado');
+
+    } catch(\Exception $ex) {
+      return ApiResponse::GetErrorResponse($ex, $ex->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+  }
+
   public function ChartCategoriasMes(Request $request)
   {
 

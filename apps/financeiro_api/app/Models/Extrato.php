@@ -40,4 +40,9 @@ class Extrato extends Model
     return $query->where($this->getTable() . '.Excluido', '=', false);
   }
 
+  public function scopeExcluidos($query)
+  {
+    return $query->where($this->getTable() . '.Excluido', '=', true);
+  }
+
 }

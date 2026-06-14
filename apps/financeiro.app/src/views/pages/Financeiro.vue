@@ -111,7 +111,7 @@
 
         <div
           class="financeiro-extrato-alerta alert alert-warning text-align-center d-flex flex-wrap align-items-center justify-content-center gap-2"
-          v-if="Extrato.filter(i => !i.IdCategoria).length > 0">
+          v-if="modoListaExtrato === 'ativos' && Extrato.filter(i => !i.IdCategoria).length > 0">
           <span>Restam {{Extrato.filter(i => !i.IdCategoria).length}} item(s) para classificar</span>
           <button type="button" class="btn btn-sm btn-outline-primary" :disabled="!CalendarioSel || isCategorizandoIA"
             @click="categorizarComIA" title="Categorizar automaticamente com IA (Gemini)">
@@ -126,9 +126,21 @@
         </div>
 
         <div class="financeiro-extrato-acoes row g-2 align-items-center mb-2">
-          <div class="col-auto">
-            <button type="button" class="btn btn-outline-primary" @click="abrirModalNovoExtrato"
-              title="Cadastrar item manualmente">
+          <div class="col-auto d-flex flex-wrap align-items-center gap-2">
+            <div class="btn-group" role="group" aria-label="Modo de listagem do extrato">
+              <button type="button" class="btn btn-outline-secondary" :class="{ active: modoListaExtrato === 'ativos' }"
+                :aria-pressed="modoListaExtrato === 'ativos'" @click="alternarModoListaExtrato('ativos')">
+                Ativos
+              </button>
+              <button type="button" class="btn btn-outline-secondary"
+                :class="{ active: modoListaExtrato === 'excluidos' }"
+                :aria-pressed="modoListaExtrato === 'excluidos'" @click="alternarModoListaExtrato('excluidos')">
+                <FontAwesomeIcon icon="trash" class="icon" />
+                Excluídos
+              </button>
+            </div>
+            <button v-if="modoListaExtrato === 'ativos'" type="button" class="btn btn-outline-primary"
+              @click="abrirModalNovoExtrato" title="Cadastrar item manualmente">
               <FontAwesomeIcon icon="circle-plus" class="icon" />
               Item Manual
             </button>
@@ -166,8 +178,15 @@
         <div class="financeiro-extrato-itens">
           <table class="table-financeiro w-100">
             <tbody>
-              <tr v-for="(item, index) in ExtratoFiltrado" :key="index" data-bs-toggle="modal"
-                data-bs-target="#modalExtrato" @click="abrirModalExtrato(item, indiceExtrato(item))">
+              <tr v-if="!ExtratoFiltrado.length">
+                <td colspan="4" class="text-center text-muted small py-4">
+                  {{ modoListaExtrato === 'excluidos' ? 'Nenhum item excluído neste mês.' : 'Nenhum item encontrado.' }}
+                </td>
+              </tr>
+              <tr v-for="(item, index) in ExtratoFiltrado" :key="item.Id ?? index"
+                :class="{ 'extrato-linha-excluida': modoListaExtrato === 'excluidos' }"
+                v-bind="modoListaExtrato === 'ativos' ? { 'data-bs-toggle': 'modal', 'data-bs-target': '#modalExtrato' } : {}"
+                @click="onClickItemExtrato(item)">
                 <td
                   style="width: 30px;"
                   :class="`item-extrato-data ${(!ExtratoFiltrado[index - 1] || (item.DataDisplay != ExtratoFiltrado[index - 1].DataDisplay)) ? '' : 'item-extrato-data-repet'}`">
@@ -188,6 +207,11 @@
                     <span v-if="item.Origem === 'manual'" class="item-extrato-info__manual text-sm" title="Item cadastrado manualmente">
                       <FontAwesomeIcon icon="pencil" class="icon" aria-hidden="true" />
                       item manual
+                    </span>
+                    <span v-if="modoListaExtrato === 'excluidos' && item.ExcluidoEmDisplay"
+                      class="item-extrato-info__excluido text-sm" title="Data da exclusão">
+                      <FontAwesomeIcon icon="trash" class="icon" aria-hidden="true" />
+                      excluído em {{ item.ExcluidoEmDisplay }}
                     </span>
                   </div>
 
@@ -258,6 +282,7 @@ import mesesModel from '../../models/meses.model'
 import tipoExtratoModel from '../../models/tipo.extrato.model.json'
 import categoriaIconsModel from '../../models/categoria.icons.model'
 import moment from "moment";
+import Swal from 'sweetalert2';
 import ModalExtrato from "@/views/pages/ModalExtrato";
 import { getTheme, THEME } from '@/helpers/theme.service'
 import { Bar } from 'vue-chartjs'
@@ -289,6 +314,8 @@ export default {
       CategoriaFiltroExtratoSel: null,
       /** Filtro por tipo de extrato (modelo tipo.extrato.model.json) */
       TipoFiltroExtratoSel: null,
+      /** Modo da listagem: 'ativos' ou 'excluidos' */
+      modoListaExtrato: 'ativos',
 
       ChartCategoriasMes: null,
       QtdMeses_ChartCategoria: 6,
@@ -536,6 +563,7 @@ export default {
       ]
       if (item.Origem === 'manual') partes.push('item manual')
       if (item.Origem === 'proc_sinc_empresa') partes.push('empresa')
+      if (item.ExcluidoEmDisplay) partes.push('excluido', item.ExcluidoEmDisplay)
       return partes.filter(Boolean).join(' ')
     },
     async categoriaLista() {
@@ -583,6 +611,63 @@ export default {
       this.TipoFiltroExtratoSel = null
       this.CategoriaFiltroExtratoSel = null
       this.pesquisaExtrato = ''
+    },
+    async alternarModoListaExtrato(modo) {
+      if (this.modoListaExtrato === modo)
+        return
+
+      this.modoListaExtrato = modo
+      this.limparFiltrosExtrato()
+
+      try {
+        swalLoading.fire('', 'Carregando Extrato, aguarde...')
+        await this.getExtrato()
+      } catch (e) {
+        Helper.messageExceptionHandler(e)
+      } finally {
+        swalLoading.close()
+      }
+    },
+    onClickItemExtrato(item) {
+      if (this.modoListaExtrato === 'excluidos') {
+        this.confirmarRestaurarExtrato(item)
+        return
+      }
+      this.abrirModalExtrato(item, this.indiceExtrato(item))
+    },
+    async confirmarRestaurarExtrato(item) {
+      const confirm = await Swal.fire({
+        title: 'Restaurar item',
+        html: `<p>Deseja restaurar este lançamento?</p><p class="small text-muted mb-0">${item.Descricao ?? ''}</p>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, restaurar',
+        cancelButtonText: 'Cancelar',
+        allowOutsideClick: false,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d'
+      })
+
+      if (!confirm.isConfirmed)
+        return
+
+      try {
+        swalLoading.fire('', 'Restaurando item, aguarde...')
+        const result = await financeiroService.restaurarExtrato({ IdExtrato: item.Id })
+        if (!result.Success)
+          throw new Error(Helper.getMessageError(result))
+
+        await this.getExtrato()
+        this.getChartCategoriasMes()
+        this.getChartCategoriaUltimosMeses()
+        this.getChartUltimosMeses()
+        swalToast.fire('', 'item restaurado', 'success')
+      } catch (e) {
+        swalToast.fire('', 'erro ao restaurar item', 'error')
+        Helper.messageExceptionHandler(e)
+      } finally {
+        swalLoading.close()
+      }
     },
     indiceExtrato(item) {
       return this.Extrato.indexOf(item)
@@ -682,7 +767,8 @@ export default {
           Valor: Helper.formatCurrency(i.Valor),
           DiaDisplay: dia,
           MesDisplay: this.CalendarioSel.NomeCurto,
-          DataDisplay: dia + '/' + this.CalendarioSel.NomeCurto
+          DataDisplay: dia + '/' + this.CalendarioSel.NomeCurto,
+          ExcluidoEmDisplay: i.ExcluidoEm ? Helper.formatDateTime(i.ExcluidoEm) : null,
         }
       });
 
@@ -706,7 +792,13 @@ export default {
 
       window.localStorage.setItem('CalendarioSel', JSON.stringify(this.CalendarioSel))
 
-      const result = await financeiroService.listaExtrato(null, null, this.CalendarioSel.Mes, this.CalendarioSel.Ano)
+      const result = await financeiroService.listaExtrato(
+        null,
+        null,
+        this.CalendarioSel.Mes,
+        this.CalendarioSel.Ano,
+        this.modoListaExtrato === 'excluidos'
+      )
       if (!result.Success)
         throw new Error(Helper.getMessageError(result))
 
@@ -959,6 +1051,29 @@ export default {
 
 .item-extrato-info__manual svg[data-icon] {
   font-size: 0.85em;
+}
+
+.item-extrato-info__excluido {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ae2828;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.item-extrato-info__excluido svg[data-icon] {
+  font-size: 0.85em;
+}
+
+.extrato-linha-excluida {
+  opacity: 0.75;
+}
+
+.extrato-linha-excluida:hover {
+  opacity: 1;
 }
 
 .item-extrato-info__personalizada {
