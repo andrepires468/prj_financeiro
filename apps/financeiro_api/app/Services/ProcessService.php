@@ -152,7 +152,8 @@ class ProcessService extends Service
             if(count($row) < 4)
               continue;
 
-            $extrato = Extrato::where("Identificador", '=', $row[2])->first();
+            $identificador = trim((string)$row[2]);
+            $extrato = Extrato::where('Identificador', '=', $identificador)->first();
             if($extrato) {
               if($extrato->Excluido) {
                 $extrato->Data = Functions::formatDate($row[0]);
@@ -160,7 +161,7 @@ class ProcessService extends Service
                 $extrato->Descricao = $row[3];
                 $extrato->Excluido = false;
                 $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
-                $extrato->Origem = 'integracao_proc';
+                $extrato->Origem = 'proc_sinc_debito';
                 $extrato->save();
                 $incluidos++;
               }
@@ -170,13 +171,13 @@ class ProcessService extends Service
             $extrato = new Extrato();
             $extrato->Data = Functions::formatDate($row[0]);
             $extrato->Valor = $row[1];
-            $extrato->Identificador = $row[2];
+            $extrato->Identificador = $identificador;
             $extrato->Descricao = $row[3];
             $extrato->IdTipoExtrato = 1; // débito
             $extrato->IdBancoExtrato = $idBancoExtrato;
             $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
             $extrato->Excluido = false;
-            $extrato->Origem = 'integracao_proc';
+            $extrato->Origem = 'proc_sinc_debito';
             $extrato->save();
 
             $incluidos++;
@@ -252,8 +253,7 @@ class ProcessService extends Service
             if($valorExtrato === null)
               continue;
 
-            // Gerar identificador único para evitar duplicados: hash dos campos relevantes (ex.: date, title, amount)
-            $identificador = 'credito-' . md5($row[0] . '|' . $row[1] . '|' . $row[2]);
+            $identificador = 'credito-' . trim((string)$row[0]) . '|' . trim((string)$row[1]) . '|' . trim((string)$row[2]);
             $extrato = Extrato::where('Identificador', '=', $identificador)->first();
             if($extrato) {
               if($extrato->Excluido) {
@@ -262,7 +262,7 @@ class ProcessService extends Service
                 $extrato->Descricao = mb_substr($titulo, 0, 420);
                 $extrato->Excluido = false;
                 $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
-                $extrato->Origem = 'integracao_proc';
+                $extrato->Origem = 'proc_sinc_credito';
                 $extrato->save();
                 $incluidos++;
               }
@@ -277,7 +277,7 @@ class ProcessService extends Service
             $extrato->IdTipoExtrato = 2; // crédito
             $extrato->IdBancoExtrato = $idBancoExtrato;
             $extrato->Excluido = false;
-            $extrato->Origem = 'integracao_proc';
+            $extrato->Origem = 'proc_sinc_credito';
             $extrato->save();
 
             $incluidos++;
@@ -294,7 +294,7 @@ class ProcessService extends Service
   /**
    * Importa lançamentos de débito a partir de emails do Nu Empresas (extrato da conta Nu Empresas).
    * CSV: date, amount, identifier(UUID), title (mesmo layout do importarDebito). IdTipoExtrato = 1 (débito).
-   * Retorna contadores para emails processados, linhas listadas e itens incluídos.
+   * Identificador: 'empresas-' + UUID do CSV (evita colisão com débito pessoal).
    */
   private function importarExtratoEmpresas($mailbox, $idBancoExtrato)
   {
@@ -323,18 +323,28 @@ class ProcessService extends Service
           $rows = array_map('str_getcsv', explode("\n", $decodedCsv));
           array_shift($rows);
 
-          $listados = count($rows);
+          $listados += count($rows);
 
           foreach($rows as $row) {
 
             if(count($row) < 4)
               continue;
 
-            // Prefixo 'empresas-' para não colidir com outros bancos que também usam UUID
-            $identificador = 'empresas-' . $row[2];
+            $identificador = 'empresas-' . trim((string)$row[2]);
             $extrato = Extrato::where('Identificador', '=', $identificador)->first();
-            if($extrato)
+            if($extrato) {
+              if($extrato->Excluido) {
+                $extrato->Data = Functions::formatDate($row[0]);
+                $extrato->Valor = $row[1];
+                $extrato->Descricao = mb_substr($row[3], 0, 420);
+                $extrato->Excluido = false;
+                $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
+                $extrato->Origem = 'proc_sinc_empresa';
+                $extrato->save();
+                $incluidos++;
+              }
               continue;
+            }
 
             $extrato = new Extrato();
             $extrato->Data = Functions::formatDate($row[0]);
@@ -344,6 +354,8 @@ class ProcessService extends Service
             $extrato->IdTipoExtrato = 1; // débito
             $extrato->IdBancoExtrato = $idBancoExtrato;
             $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
+            $extrato->Excluido = false;
+            $extrato->Origem = 'proc_sinc_empresa';
             $extrato->save();
 
             $incluidos++;

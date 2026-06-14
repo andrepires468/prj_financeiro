@@ -225,6 +225,11 @@ input.form-control {
     color: #cb4a4a;
 }
 
+.extrato-origem-empresa {
+    color: #9333ea;
+    font-weight: 500;
+}
+
 /* ========== Modo escuro (data-bs-theme="dark") ========== */
 
 [data-bs-theme="dark"] body {
@@ -267,6 +272,10 @@ input.form-control {
 
 [data-bs-theme="dark"] .extrato-saida {
     color: #e87373;
+}
+
+[data-bs-theme="dark"] .extrato-origem-empresa {
+    color: #a78bfa;
 }
 
 /* Tabela extrato (Financeiro.vue) - hover da linha */

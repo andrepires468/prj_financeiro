@@ -16,7 +16,7 @@ class Extrato extends Model
     'Id' => 'int',
     'Data' => 'required|date_format:Y-m-d',
     'Valor' => 'required|numeric',
-    'Identificador' => 'required|string|max:40',
+    'Identificador' => 'required|string|max:500',
     'Descricao' => 'required|string|max:420',
     'IdTipoExtrato' => 'required|int',
     'IdBancoExtrato' => 'required|int',

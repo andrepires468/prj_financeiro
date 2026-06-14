@@ -135,27 +135,33 @@
           </div>
         </div>
 
-        <div class="financeiro-extrato-filtros row g-2 align-items-center mb-2">
-          <div class="col-md-3">
-            <MultselectForm :options="TipoExtratoLista" v-model="TipoFiltroExtratoSel" :internalSearch="true"
-              :searchable="true" label="Nome" placeholder="Tipo" />
-          </div>
-          <div class="col-md-5">
-            <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroExtratoSel" :internalSearch="true"
-              :searchable="true" label="CategoriaNome" placeholder="Categoria" showCategoryIcon />
-          </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control form-control-md" id="pesquisaCategoria" v-model="pesquisaExtrato"
-              placeholder="Filtrar">
-          </div>
-          <div class="col-md-1 financeiro-extrato-filtros__limpar">
-            <button type="button" class="btn btn-outline-secondary btn-icon-only btn-fill w-100"
-              :disabled="!temFiltroExtrato" @click="limparFiltrosExtrato" title="Limpar filtros da tabela"
-              aria-label="Limpar filtros da tabela">
-              <FontAwesomeIcon icon="circle-xmark" class="icon" />
-            </button>
-          </div>
-        </div>
+        <form class="financeiro-extrato-filtros mb-2" @submit.prevent autocomplete="off" novalidate
+          aria-label="Filtros do extrato">
+          <fieldset class="financeiro-extrato-filtros__grupo border-0 p-0 m-0">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-3">
+                <MultselectForm :options="TipoExtratoLista" v-model="TipoFiltroExtratoSel" :internalSearch="true"
+                  :searchable="true" label="Nome" placeholder="Tipo" />
+              </div>
+              <div class="col-md-5">
+                <MultselectForm :options="CategoriaLista" v-model="CategoriaFiltroExtratoSel" :internalSearch="true"
+                  :searchable="true" label="CategoriaNome" placeholder="Categoria" showCategoryIcon />
+              </div>
+              <div class="col-md-3">
+                <label class="visually-hidden" for="pesquisaExtrato">Filtrar extrato</label>
+                <input type="search" class="form-control form-control-md" id="pesquisaExtrato" v-model="pesquisaExtrato"
+                  placeholder="Filtrar" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+              <div class="col-md-1 financeiro-extrato-filtros__limpar">
+                <button type="button" class="btn btn-outline-secondary btn-icon-only btn-fill w-100"
+                  :disabled="!temFiltroExtrato" @click="limparFiltrosExtrato" title="Limpar filtros da tabela"
+                  aria-label="Limpar filtros da tabela">
+                  <FontAwesomeIcon icon="circle-xmark" class="icon" />
+                </button>
+              </div>
+            </div>
+          </fieldset>
+        </form>
 
         <div class="financeiro-extrato-itens">
           <table class="table-financeiro w-100">
@@ -191,11 +197,14 @@
                   </p>
 
                   <p class="item-extrato-info__descricao small m-0">
-                    <span v-if="item.TipoExtratoNome" class="item-extrato-info__tipo"
-                      :class="{ 'text-muted': !item.TipoExtratoCor }"
-                      :style="item.TipoExtratoCor ? { color: item.TipoExtratoCor } : null">
-                      {{ item.TipoExtratoNome }}
-                    </span>
+                    <template v-if="item.TipoExtratoNome">
+                      <span class="item-extrato-info__tipo"
+                        :class="{ 'text-muted': !item.TipoExtratoCor }"
+                        :style="item.TipoExtratoCor ? { color: item.TipoExtratoCor } : null">
+                        {{ item.TipoExtratoNome }}
+                      </span>
+                      <span v-if="item.Origem === 'proc_sinc_empresa'" class="item-extrato-info__tipo extrato-origem-empresa">- Empresa</span>
+                    </template>
                     <span class="item-extrato-info__texto">{{ item.Descricao }}</span>
                   </p>
                 </td>
@@ -357,7 +366,7 @@ export default {
       if (this.pesquisaExtrato) {
         const termo = this.normalizarTexto(this.pesquisaExtrato)
         lista = lista.filter(i =>
-          this.normalizarTexto(i.CategoriaNome + ' ' + i.Descricao).includes(termo)
+          this.normalizarTexto(this.textoPesquisavelExtrato(i)).includes(termo)
         )
       }
       if (this.TipoFiltroExtratoSel && this.TipoFiltroExtratoSel.Id != null) {
@@ -510,6 +519,24 @@ export default {
     },
     normalizarTexto(texto) {
       return Helper.normalizarTexto(texto);
+    },
+    /** Texto visível na linha do extrato, usado pelo filtro de pesquisa */
+    textoPesquisavelExtrato(item) {
+      const partes = [
+        item.DiaDisplay,
+        item.MesDisplay,
+        item.DataDisplay,
+        item.CategoriaNome,
+        item.DescricaoPersonalizada,
+        item.TipoExtratoNome,
+        item.Descricao,
+        item.Valor,
+        item.ValorNumerico != null ? String(Math.abs(item.ValorNumerico)) : '',
+        item.Tipo === 'entrada' ? 'entrada' : 'saida',
+      ]
+      if (item.Origem === 'manual') partes.push('item manual')
+      if (item.Origem === 'proc_sinc_empresa') partes.push('empresa')
+      return partes.filter(Boolean).join(' ')
     },
     async categoriaLista() {
 
@@ -832,6 +859,15 @@ export default {
 </script>
 
 <style scoped>
+.financeiro-extrato-filtros__titulo {
+  float: none;
+  width: 100%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  padding: 0;
+}
+
 .financeiro-extrato-filtros__limpar {
   display: flex;
   align-items: stretch;

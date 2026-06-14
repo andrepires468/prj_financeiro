@@ -73,10 +73,14 @@
           <div class="row">
             <div class="col-9 small">
               <p>{{ ExtratoSel.Descricao }}</p>
-              <p class="mb-0"
-                 v-if="ExtratoSel.TipoExtratoNome"
-                 :class="{ 'text-muted': !ExtratoSel.TipoExtratoCor }"
-                 :style="ExtratoSel.TipoExtratoCor ? { color: ExtratoSel.TipoExtratoCor } : null">{{ ExtratoSel.TipoExtratoNome }}</p>
+              <p class="mb-0" v-if="ExtratoSel.TipoExtratoNome">
+                <span
+                  :class="{ 'text-muted': !ExtratoSel.TipoExtratoCor }"
+                  :style="ExtratoSel.TipoExtratoCor ? { color: ExtratoSel.TipoExtratoCor } : null">
+                  {{ ExtratoSel.TipoExtratoNome }}
+                </span>
+                <span v-if="ExtratoSel.Origem === 'proc_sinc_empresa'" class="extrato-origem-empresa"> - Empresa</span>
+              </p>
               <p class="mb-0 small text-muted" v-if="ExtratoSel.Origem === 'manual'">Cadastrado manualmente</p>
             </div>
             <div class="col-3">
