@@ -10,7 +10,7 @@ window.addEventListener('unhandledrejection', (e) => { showAppError('Erro ao car
 import { createApp } from 'vue'
 import App from './App.vue'
 
-import { BootstrapIconsPlugin } from "bootstrap-icons-vue";
+import { FontAwesomeIcon } from '@/plugins/fontawesome'
 import VueSweetalert2 from 'vue-sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -93,7 +93,7 @@ app.component('DatePicker', DatePicker)
 app.component('MultselectForm', MultselectForm)
 
 app.use(VueSweetalert2, SwalOptions)
-app.use(BootstrapIconsPlugin) // https://www.npmjs.com/package/bootstrap-icons-vue
+app.component('FontAwesomeIcon', FontAwesomeIcon)
 app.use(ColorInput)
 app.use(router)
 

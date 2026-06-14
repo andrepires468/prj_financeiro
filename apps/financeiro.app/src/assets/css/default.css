@@ -63,9 +63,92 @@ hr {
     margin-top: 30px;
 }
 
-.icon {
-    width: 18px;
-    height: 18px;
+/* ========== Font Awesome — ícones de sistema ========== */
+
+:root {
+    --app-control-height: calc(1.5em + 0.75rem + 2px);
+    --app-control-height-sm: calc(1.5em + 0.5rem + 2px);
+}
+
+svg.svg-inline--fa {
+    display: inline-block;
+    vertical-align: -0.125em;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+}
+
+.btn:has(svg[data-icon]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: var(--app-control-height);
+}
+
+.btn.btn-sm:has(svg[data-icon]) {
+    min-height: var(--app-control-height-sm);
+}
+
+.btn-fill:has(svg[data-icon]) {
+    display: flex;
+    width: 100%;
+}
+
+.btn-icon-only {
+    padding-inline: 0.625rem;
+}
+
+.btn-fill.btn-icon-only {
+    padding-inline: 0;
+}
+
+.btn.btn-sm svg.svg-inline--fa[data-icon] {
+    font-size: 0.875rem;
+}
+
+.btn.btn-sm.btn-icon-only svg.svg-inline--fa[data-icon] {
+    font-size: 1rem;
+}
+
+.btn:not(.btn-sm):not(.btn-icon-only) svg.svg-inline--fa[data-icon]:not(.theme-toggle-icon):not(.back-to-top-icon) {
+    font-size: 1rem;
+}
+
+.btn-reveal-senha {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    padding-inline: 0.65rem;
+}
+
+.btn-reveal-senha svg.svg-inline--fa[data-icon] {
+    font-size: 1rem;
+}
+
+label.form-control-label svg.svg-inline--fa[data-icon],
+label.form-label svg.svg-inline--fa[data-icon] {
+    font-size: 0.9375rem;
+    margin-right: 0.35rem;
+}
+
+svg.nav-menu-icon.svg-inline--fa,
+.nav-link svg.nav-menu-icon.svg-inline--fa {
+    font-size: 1.0625rem;
+}
+
+.btn svg.theme-toggle-icon.svg-inline--fa,
+svg.theme-toggle-icon.svg-inline--fa {
+    font-size: 1.125rem;
+}
+
+svg.back-to-top-icon.svg-inline--fa {
+    font-size: 1.125rem;
+}
+
+.dropdown-item svg.svg-inline--fa[data-icon] {
+    font-size: 1rem;
 }
 
 .btn-fill{

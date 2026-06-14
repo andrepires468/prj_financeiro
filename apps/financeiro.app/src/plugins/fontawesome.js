@@ -1,0 +1,71 @@
+import { library, config } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import {
+  faWallet,
+  faFolderOpen,
+  faTags,
+  faBuildingColumns,
+  faSun,
+  faMoon,
+  faCircleUser,
+  faKey,
+  faRightFromBracket,
+  faArrowUp,
+  faChevronLeft,
+  faChevronRight,
+  faMagnifyingGlass,
+  faCloudArrowDown,
+  faEye,
+  faEyeSlash,
+  faCircleXmark,
+  faCirclePlus,
+  faPencil,
+  faPenToSquare,
+  faTrash,
+  faUnlock,
+  faLock,
+  faTag,
+  faXmark,
+  faEnvelope,
+  faCalendar,
+  faCalendarDays,
+  faCheck,
+  faArrowRotateRight
+} from '@fortawesome/free-solid-svg-icons'
+
+config.autoAddCss = false
+
+library.add(
+  faWallet,
+  faFolderOpen,
+  faTags,
+  faBuildingColumns,
+  faSun,
+  faMoon,
+  faCircleUser,
+  faKey,
+  faRightFromBracket,
+  faArrowUp,
+  faChevronLeft,
+  faChevronRight,
+  faMagnifyingGlass,
+  faCloudArrowDown,
+  faEye,
+  faEyeSlash,
+  faCircleXmark,
+  faCirclePlus,
+  faPencil,
+  faPenToSquare,
+  faTrash,
+  faUnlock,
+  faLock,
+  faTag,
+  faXmark,
+  faEnvelope,
+  faCalendar,
+  faCalendarDays,
+  faCheck,
+  faArrowRotateRight
+)
+
+export { FontAwesomeIcon }

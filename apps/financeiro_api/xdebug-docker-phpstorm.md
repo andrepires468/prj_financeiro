@@ -98,7 +98,7 @@ xdebug.mode => debug => debug
 |-------|-------|
 | Name | `financeiro_api` |
 | Host | `localhost` |
-| Port | `8099` |
+| Port | `5082` |
 | Debugger | `Xdebug` |
 
 5. Marque a opção **☑ Use path mappings**

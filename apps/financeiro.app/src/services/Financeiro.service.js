@@ -78,6 +78,34 @@ export default {
       }
     }
   },
+  async createExtratoManual(data) {
+    try {
+      const url = `${endpoints.financeiro}/create-extrato-manual`;
+      const result = await api.post(url, data)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
+  async excluirExtrato(data) {
+    try {
+      const url = `${endpoints.financeiro}/excluir-extrato`;
+      const result = await api.put(url, data)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
   async ChartCategoriaUltimosMeses(idCategoria, qtdMeses) {
 
     const params = [

@@ -1,0 +1,52 @@
+---
+description: Ícones de sistema com Font Awesome no frontend financeiro.app
+globs: apps/financeiro.app/**/*
+alwaysApply: false
+---
+
+# Font Awesome — ícones de sistema
+
+Use **Font Awesome** para ícones de interface (navegação, botões, labels, ações). **Não** substitua ícones de categorias financeiras.
+
+## Quando usar cada abordagem
+
+| Caso | Componente | Exemplo |
+|------|------------|---------|
+| Ícone de UI (menu, botão, formulário) | `FontAwesomeIcon` | `<FontAwesomeIcon icon="trash" class="icon" />` |
+| Ícone de categoria (extrato, cadastro) | `IconeCategoria` | `<IconeCategoria :icon="item.IconTag" :color="item.IconColor" />` |
+
+Os ícones de categoria vêm de `categoria.icons.model.js` e **não** devem ser migrados para Font Awesome.
+
+## Como adicionar um ícone de sistema
+
+1. Importe o ícone em `src/plugins/fontawesome.js` a partir de `@fortawesome/free-solid-svg-icons`.
+2. Registre com `library.add(...)`.
+3. Use no template: `<FontAwesomeIcon icon="nome-do-icone" class="icon" aria-hidden="true" />`.
+
+O componente `FontAwesomeIcon` já está registrado globalmente em `main.js`.
+
+## Classes CSS existentes
+
+- `svg[data-icon]` / `.icon` — tamanho proporcional ao contexto (`1em`), definido em `default.css`.
+- `.nav-menu-icon` — menu principal (`SystemLayout.vue`).
+- `.theme-toggle-icon` — alternância claro/escuro.
+- `.back-to-top-icon` — botão voltar ao topo.
+
+Botões com ícone usam `inline-flex` + `gap` (via `:has(svg[data-icon])` em `default.css`). Botões **somente com ícone** devem incluir a classe `btn-icon-only`.
+
+Não fixe `width`/`height` em px nos ícones de sistema — prefira `font-size` em `rem`/`em`.
+
+Mantenha `aria-hidden="true"` em ícones decorativos ao lado de texto visível.
+
+## Pacotes
+
+- `@fortawesome/fontawesome-svg-core`
+- `@fortawesome/free-solid-svg-icons`
+- `@fortawesome/vue-fontawesome`
+
+Prefira ícones **solid** (`free-solid-svg-icons`). Só adicione `free-regular-svg-icons` se precisar de variantes outline específicas.
+
+## Não usar
+
+- `bootstrap-icons` / `b-icon-*` — removidos do projeto.
+- Font Awesome para representar categorias de lançamento — use sempre `IconeCategoria`.

@@ -153,8 +153,19 @@ class ProcessService extends Service
               continue;
 
             $extrato = Extrato::where("Identificador", '=', $row[2])->first();
-            if($extrato)
+            if($extrato) {
+              if($extrato->Excluido) {
+                $extrato->Data = Functions::formatDate($row[0]);
+                $extrato->Valor = $row[1];
+                $extrato->Descricao = $row[3];
+                $extrato->Excluido = false;
+                $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
+                $extrato->Origem = 'integracao_proc';
+                $extrato->save();
+                $incluidos++;
+              }
               continue;
+            }
 
             $extrato = new Extrato();
             $extrato->Data = Functions::formatDate($row[0]);
@@ -164,6 +175,8 @@ class ProcessService extends Service
             $extrato->IdTipoExtrato = 1; // débito
             $extrato->IdBancoExtrato = $idBancoExtrato;
             $extrato->CriadoEm = $this->date->format('Y-m-d H:i:s');
+            $extrato->Excluido = false;
+            $extrato->Origem = 'integracao_proc';
             $extrato->save();
 
             $incluidos++;
@@ -205,35 +218,66 @@ class ProcessService extends Service
 
           $attachment = imap_fetchbody($mailbox, $mail_id, $part_number + 1);
           $decodedCsv = base64_decode($attachment);
-          $rows = array_map('str_getcsv', explode("\n", $decodedCsv));
+          $decodedCsv = preg_replace('/^\xEF\xBB\xBF/u', '', $decodedCsv);
+          $rows = array_map('str_getcsv', preg_split('/\R/u', $decodedCsv));
           array_shift($rows);
+          $rows = array_values(array_filter($rows, function($row) {
+            if(!is_array($row))
+              return false;
 
-          $listados = count($rows);
+            foreach($row as $coluna) {
+              if(trim((string)$coluna) !== '')
+                return true;
+            }
+
+            return false;
+          }));
+
+          $listados += count($rows);
 
           foreach($rows as $row) {
 
             if(count($row) < 3)
               continue;
 
-            if(strtolower($row[1]) === 'pagamento recebido')
+            $titulo = trim((string)$row[1]);
+            if($titulo === '' || strtolower($titulo) === 'pagamento recebido')
+              continue;
+
+            $dataExtrato = $this->parseDataCreditoCsv($row[0]);
+            if(!$dataExtrato)
+              continue;
+
+            $valorExtrato = $this->valorFaturaCsv($row[2]);
+            if($valorExtrato === null)
               continue;
 
             // Gerar identificador único para evitar duplicados: hash dos campos relevantes (ex.: date, title, amount)
             $identificador = 'credito-' . md5($row[0] . '|' . $row[1] . '|' . $row[2]);
             $extrato = Extrato::where('Identificador', '=', $identificador)->first();
-            if($extrato)
+            if($extrato) {
+              if($extrato->Excluido) {
+                $extrato->Data = $dataExtrato;
+                $extrato->Valor = $valorExtrato;
+                $extrato->Descricao = mb_substr($titulo, 0, 420);
+                $extrato->Excluido = false;
+                $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
+                $extrato->Origem = 'integracao_proc';
+                $extrato->save();
+                $incluidos++;
+              }
               continue;
+            }
 
-            // CSV crédito: date em Y-m-d (ex.: 2026-03-01)
-            $dataCredito = trim($row[0]);
-            $dt = \DateTime::createFromFormat('Y-m-d', $dataCredito);
             $extrato = new Extrato();
-            $extrato->Data = $dt ? $dt->format('Y-m-d') : date('Y-m-d', strtotime($dataCredito));
-            $extrato->Valor = $row[2] * -1; //
+            $extrato->Data = $dataExtrato;
+            $extrato->Valor = $valorExtrato;
             $extrato->Identificador = $identificador;
-            $extrato->Descricao = mb_substr($row[1], 0, 420); // title
+            $extrato->Descricao = mb_substr($titulo, 0, 420); // title
             $extrato->IdTipoExtrato = 2; // crédito
             $extrato->IdBancoExtrato = $idBancoExtrato;
+            $extrato->Excluido = false;
+            $extrato->Origem = 'integracao_proc';
             $extrato->save();
 
             $incluidos++;
@@ -313,6 +357,43 @@ class ProcessService extends Service
     return ['emails' => $emails, 'listados' => $listados, 'incluidos' => $incluidos];
   }
 
+  /**
+   * Converte data do CSV de fatura (Y-m-d ou d/m/Y) para Y-m-d.
+   */
+  private function parseDataCreditoCsv($rawDate): ?string
+  {
+    $dataCredito = trim((string)$rawDate);
+    $dataCredito = preg_replace('/^\xEF\xBB\xBF/u', '', $dataCredito);
+
+    if($dataCredito === '')
+      return null;
+
+    if(preg_match('/^\d{4}-\d{2}-\d{2}$/', $dataCredito))
+      return $dataCredito;
+
+    $dt = \DateTime::createFromFormat('d/m/Y', $dataCredito);
+    if($dt instanceof \DateTime)
+      return $dt->format('Y-m-d');
+
+    $timestamp = strtotime($dataCredito);
+    if($timestamp === false)
+      return null;
+
+    return date('Y-m-d', $timestamp);
+  }
+
+  /**
+   * Normaliza valor da fatura: despesas ficam negativas no extrato.
+   */
+  private function valorFaturaCsv($rawAmount): ?float
+  {
+    $valor = Functions::parseValorMonetario($rawAmount);
+    if($valor === null)
+      return null;
+
+    return $valor > 0 ? $valor * -1 : $valor;
+  }
+
   public function Fechamento()
   {
 
@@ -348,6 +429,7 @@ class ProcessService extends Service
         ) as SaldoFechamento", [$idBancoExtrato, $data_base])
         ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
         ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+        ->ativos()
         ->first();
 
       if(!$fechamento_atual)
@@ -424,6 +506,7 @@ class ProcessService extends Service
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->where('Extrato.IdCategoria', '=', $idCategoria)
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->ativos()
       ->first();
 
     $totalCategoria = 0;
@@ -489,6 +572,7 @@ class ProcessService extends Service
       ->join('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->whereBetween('Extrato.Data', [$data_inicio_hist, $data_fim_hist])
+      ->ativos()
       ->orderByDesc('Extrato.Data')
       ->limit(300)
       ->get();
@@ -501,6 +585,7 @@ class ProcessService extends Service
       ->where('Extrato.IdBancoExtrato', '=', $idBancoExtrato)
       ->whereNull('Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio_mes . ' 00:00:00', $data_fim_mes . ' 23:59:59'])
+      ->ativos()
       ->get();
 
     if($itensACategorizar->isEmpty()) {
@@ -575,6 +660,7 @@ PROMPT;
 
       $extrato = Extrato::where('Id', '=', $id)
         ->where('IdBancoExtrato', '=', $idBancoExtrato)
+        ->ativos()
         ->first();
       if(!$extrato) continue;
 
