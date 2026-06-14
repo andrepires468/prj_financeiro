@@ -79,6 +79,8 @@ class FinanceiroService extends Service
     $data_fim = date('Y-m-t', strtotime("last day of {$ano}-{$mes}"));
 
 
+    $apenasExcluidos = in_array(strtolower((string)$request->excluidos), ['1', 'true', 'yes'], true);
+
     $model = Extrato::selectRaw("
       Extrato.*,
       (case when Extrato.Valor > 0 then 'entrada' else 'saida' end) Tipo,
@@ -93,9 +95,14 @@ class FinanceiroService extends Service
       ->leftJoin('TipoExtrato', 'TipoExtrato.Id', '=', 'Extrato.IdTipoExtrato')
       ->leftJoin('Categoria', 'Categoria.Id', '=', 'Extrato.IdCategoria')
       ->whereBetween('Extrato.Data', [$data_inicio . ' 00:00:00', $data_fim . ' 23:59:59'])
-      ->where('Extrato.IdBancoExtrato', '=', $this->idBancoExtrato)
-      ->ativos()
-      ->orderByDesc('Extrato.Data');
+      ->where('Extrato.IdBancoExtrato', '=', $this->idBancoExtrato);
+
+    if($apenasExcluidos)
+      $model->excluidos();
+    else
+      $model->ativos();
+
+    $model->orderByDesc('Extrato.Data');
 
     if($request->page && $request->pageSize) {
       $count = $model->count();
@@ -282,6 +289,41 @@ class FinanceiroService extends Service
 
     if($categoria_ant)
       $this->processService->procFechamentoCategoria($categoria_ant, $dataBase);
+
+    $this->processService->Fechamento();
+
+  }
+
+  public function RestaurarExtrato(Request $request)
+  {
+
+    if(!$request->IdExtrato)
+      throw new \Exception('IdExtrato não passado');
+
+    $extrato = Extrato::select()
+      ->where('Id', '=', $request->IdExtrato)
+      ->first();
+
+    if(!$extrato)
+      throw new \Exception('Extrato não encontrado');
+
+    if((int)$extrato->IdBancoExtrato !== (int)$this->idBancoExtrato)
+      throw new \Exception('Extrato não encontrado');
+
+    if(!$extrato->Excluido)
+      throw new \Exception('Extrato não está excluído');
+
+    $categoria = $extrato->IdCategoria;
+
+    $extrato->Excluido = false;
+    $extrato->RestauradoEm = $this->date->format('Y-m-d H:i:s');
+    $extrato->save();
+
+    $dataExtrato = new \DateTime($extrato->Data);
+    $dataBase = $dataExtrato->modify('first day of this month')->format('Y-m-d');
+
+    if($categoria)
+      $this->processService->procFechamentoCategoria($categoria, $dataBase);
 
     $this->processService->Fechamento();
 

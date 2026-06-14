@@ -18,7 +18,7 @@ export default {
       }
     }
   },
-  async listaExtrato(page = null, pageSize = null, mes = null, ano = null) {
+  async listaExtrato(page = null, pageSize = null, mes = null, ano = null, excluidos = false) {
     try {
       const params = [
         {
@@ -36,6 +36,10 @@ export default {
         {
           Name: 'ano',
           Value: ano
+        },
+        {
+          Name: 'excluidos',
+          Value: excluidos ? '1' : null
         },
       ]
       const url = `${endpoints.financeiro}/lista-extrato${Helper.getURLParams(params)}`;
@@ -95,6 +99,20 @@ export default {
   async excluirExtrato(data) {
     try {
       const url = `${endpoints.financeiro}/excluir-extrato`;
+      const result = await api.put(url, data)
+      return Helper.getServiceResponse(result)
+    } catch (e) {
+      return {
+        Code: ServiceResponseCode.GenericException,
+        Title: 'Error',
+        Message: e.message,
+        Success: false,
+      }
+    }
+  },
+  async restaurarExtrato(data) {
+    try {
+      const url = `${endpoints.financeiro}/restaurar-extrato`;
       const result = await api.put(url, data)
       return Helper.getServiceResponse(result)
     } catch (e) {
