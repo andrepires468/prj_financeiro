@@ -5,7 +5,7 @@
 - `/apps/financeiro_app`: Frontend Application built with Vue 3 and Vue CLI.
 
 ## Tech Stack Details
-- **Backend**: PHP 8.x, Lumen 10, mysql (PDO).
+- **Backend**: PHP >= 8.2.35, Lumen 10, mysql (PDO).
 - **Frontend**: Vue 3, Vue CLI.
 - **Architecture**: Layered Architecture using Services and Interfaces.
 
