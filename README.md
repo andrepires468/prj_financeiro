@@ -94,6 +94,8 @@ Ajuste também `apps/financeiro_api/.env` (`DB_PASSWORD`, `DB_DATABASE`, etc.) p
 
 ## API: dependências e migrações
 
+A API exige **PHP 8.2.35 ou superior** (correção de falha de segurança em versões anteriores). No Docker, a imagem `php:8.2.35-fpm` já atende esse requisito; em instalação local no Windows, use um PHP 8.2.35+ no `PATH` ou invoque `server.php` com o binário correto (`PHP_BINARY`).
+
 O volume `api_vendor` mantém o `vendor` da API dentro do container. Se precisar reinstalar dependências PHP:
 
 ```bash
